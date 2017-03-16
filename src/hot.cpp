@@ -100,21 +100,25 @@ std::array<Triangle, 7> odd_integral_bounds(
   }
 }
 
-/* Computes 1 or 2 triangles which can be used for the
- * piecewise integral of the Wasserstein distance with even
- * k */
-boost::variant<std::array<Triangle, 2>,
-               std::array<Triangle, 1> >
-even_integral_bounds(const Face &face) {
-  Point verts[tri_verts] = {face.vertex(0)->point(),
-                            face.vertex(1)->point(),
-                            face.vertex(2)->point()};
+void order_points(std::array<Point, tri_verts> &verts) {
   if(verts[0][0] > verts[1][0]) {
     std::swap(verts[0], verts[1]);
   }
   if(verts[1][0] > verts[2][0]) {
     std::swap(verts[2], verts[1]);
   }
+}
+
+/* Computes 1 or 2 triangles which can be used for the
+ * piecewise integral of the Wasserstein distance with even
+ * k */
+boost::variant<std::array<Triangle, 2>,
+               std::array<Triangle, 1> >
+even_integral_bounds(const Face &face) {
+  std::array<Point, tri_verts> verts = {
+      face.vertex(0)->point(), face.vertex(1)->point(),
+      face.vertex(2)->point()};
+  order_points(verts);
   if(verts[0][0] == verts[1][0] ||
      verts[1][0] == verts[2][0]) {
     // Return a single triangle in this case
@@ -149,10 +153,45 @@ class triangle_w_helper<T, 2> {
   Real operator()(T &bounds) {
     Real integral = 0.0 / 0.0;
     for(auto area : bounds) {
+      /* Given a signed width of w, an initial x of x_0, two
+       * bounding segments with y = si x + offi, and a
+       * centroid located at (x_c, y_c), we need to compute:
+       * w**4*(-s1**3 - 3*s1 + s2**3 + 3*s2)/12 +
+       * w**3*(-off1*s1**2 - off1 + off2*s2**2 + off2 +
+       * s1**2*y_c + 2*s1*x_c - s2**2*y_c - 2*s2*x_c)/3 +
+       * w**2*(-off1**2*s1 + 2*off1*s1*y_c + 2*off1*x_c +
+       * off2**2*s2 - 2*off2*s2*y_c - 2*off2*x_c - s1*x_c**2
+       * - s1*y_c**2 + s2*x_c**2 + s2*y_c**2)/2 - w*(off1**3
+       * - 3*off1**2*y_c + 3*off1*x_c**2 + 3*off1*y_c**2 -
+       * off2**3 + 3*off2**2*y_c - 3*off2*x_c**2 -
+       * 3*off2*y_c**2)/3 + x_0**4*(s1**3 + 3*s1 - s2**3 -
+       * 3*s2)/12 + x_0**3*(off1*s1**2 + off1 - off2*s2**2 -
+       * off2 - s1**2*y_c - 2*s1*x_c + s2**2*y_c +
+       * 2*s2*x_c)/3 + x_0**2*(off1**2*s1 - 2*off1*s1*y_c -
+       * 2*off1*x_c - off2**2*s2 + 2*off2*s2*y_c +
+       * 2*off2*x_c + s1*x_c**2 + s1*y_c**2 - s2*x_c**2 -
+       * s2*y_c**2)/2 + x_0*(off1**3 - 3*off1**2*y_c +
+       * 3*off1*x_c**2 + 3*off1*y_c**2 - off2**3 +
+       * 3*off2**2*y_c - 3*off2*x_c**2 - 3*off2*y_c**2)/3
+       *
+       * Start by computing the lines used for boundaries
+       * and the width.
+       */
+      std::array<Point, tri_verts> verts = {
+          area.vertex(0), area.vertex(1), area.vertex(2)};
+      order_points(verts);
+			// Find the index of the non-vertical point
+      constexpr const int w_idx =
+          (verts[0][0] != verts[1][0]) ? 0 : 2;
+			// Compute the signed width
+      K::RT width = verts[w_idx][0] - verts[(w_idx + 1) % tri_verts][0];
+			// Compute the bounding lines
     }
-    return integral;
   }
-};
+  return integral;
+}
+}
+;
 
 /* Computes the k Wasserstein distance of the triangular
  * face to it's centroid */
