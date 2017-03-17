@@ -6,6 +6,8 @@ project(hot-error)
 find_package(CGAL REQUIRED COMPONENTS Core)
 include(${CGAL_USE_FILE})
 
+include_directories(include/polynomial)
+
 add_executable(hot src/hot.cpp)
 target_compile_options(hot PUBLIC "-g")
 set_property(TARGET hot PROPERTY CXX_STANDARD 11)
