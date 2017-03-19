@@ -12,6 +12,8 @@
 
 #include <iostream>
 
+#include <polynomial.hpp>
+
 using RNG = std::mt19937_64;
 
 using Real = float;
@@ -25,6 +27,7 @@ using Triangle = CGAL::Triangle_2<K>;
 using Line = CGAL::Line_2<K>;
 using Segment = CGAL::Segment_2<K>;
 using Vector = CGAL::Vector_2<K>;
+using Direction = CGAL::Direction_2<K>;
 
 constexpr const int dims = 2;
 
@@ -45,19 +48,11 @@ void generate_rand_dt(int num_points, DT &dt) {
   }
 }
 
-Real triangle_area(const Face &face) {
-  Point origin = face.vertex(0)->point();
-  Point sides[tri_verts - 1];
-  for(int i = 0; i < tri_verts - 1; i++) {
-    sides[i] =
-        Point(face.vertex(i)->point()[0] - origin[0],
-              face.vertex(i)->point()[1] - origin[1]);
-  }
-  Real area = std::fabs(CGAL::to_double(
-                  sides[0][0] * sides[1][1] -
-                  sides[1][0] * sides[0][1])) /
-              2.0;
-  return area;
+K::RT triangle_area(const Face &face) {
+  return Triangle(face.vertex(0)->point(),
+                  face.vertex(1)->point(),
+                  face.vertex(2)->point())
+      .area();
 }
 
 /* Computes the centroid of the triangle */
@@ -106,6 +101,9 @@ void order_points(std::array<Point, tri_verts> &verts) {
   }
   if(verts[1][0] > verts[2][0]) {
     std::swap(verts[2], verts[1]);
+    if(verts[0][0] > verts[1][0]) {
+      std::swap(verts[0], verts[1]);
+    }
   }
 }
 
@@ -150,8 +148,8 @@ class triangle_w_helper;
 template <typename T>
 class triangle_w_helper<T, 2> {
  public:
-  Real operator()(T &bounds) {
-    Real integral = 0.0 / 0.0;
+  K::RT operator()(T &bounds) {
+    K::RT integral = 0;
     for(auto area : bounds) {
       /* Given a signed width of w, an initial x of x_0, two
        * bounding segments with y = si x + offi, and a
@@ -180,26 +178,77 @@ class triangle_w_helper<T, 2> {
       std::array<Point, tri_verts> verts = {
           area.vertex(0), area.vertex(1), area.vertex(2)};
       order_points(verts);
-			// Find the index of the non-vertical point
-      constexpr const int w_idx =
+
+      /* Find the index of the non-vertical point
+                         * It's guaranteed to be either the
+       * leftmost or
+                         * rightmost point
+                         */
+      const int w_idx =
           (verts[0][0] != verts[1][0]) ? 0 : 2;
-			// Compute the signed width
-      K::RT width = verts[w_idx][0] - verts[(w_idx + 1) % tri_verts][0];
-			// Compute the bounding lines
+      // Compute the signed width
+      K::RT width = verts[w_idx][0] -
+                    verts[(w_idx + 1) % tri_verts][0];
+      /* Compute the bounding lines
+       * x = ax t + bx -> t = (x - bx) /
+       * ax
+       * y = ay t + by = (ay / ax) x +
+       * (-ay bx / ax + by)
+       *
+       * bx = verts[w_idx][0], by = verts[w_idx][1]
+       */
+      Vector dir_1 =
+          Line(verts[w_idx], verts[(w_idx + 1) % tri_verts])
+              .to_vector();
+      Vector dir_2 =
+          Line(verts[w_idx], verts[(w_idx + 2) % tri_verts])
+              .to_vector();
+      K::RT slope_1 = dir_1[1] / dir_1[0];
+      K::RT slope_2 = dir_2[1] / dir_2[0];
+      if((w_idx == 0 && slope_1 < slope_2) ||
+         (w_idx == 2 && slope_1 > slope_2)) {
+        std::swap(slope_1, slope_2);
+      }
+      Numerical::Polynomial<K::RT, 1, 1> bound_1;
+      bound_1.coeff(1) = slope_1;
+      bound_1.coeff(0) =
+          -verts[w_idx][0] * slope_1 + verts[w_idx][1];
+      Numerical::Polynomial<K::RT, 1, 1> bound_2;
+      bound_2.coeff(1) = slope_2;
+      bound_2.coeff(0) =
+          -verts[w_idx][0] * slope_2 + verts[w_idx][1];
+
+      Numerical::Polynomial<K::RT, 2, 2> initial(
+          (Tags::Zero_Tag()));
+      initial.coeff(2, 0) = 1;
+      initial.coeff(0, 2) = 1;
+      auto y_int = initial.integrate(1);
+      Numerical::Polynomial<K::RT, 3, 1> upper =
+          y_int.var_sub(1, 0, bound_1.coeff(1)) +
+          y_int.slice(1, bound_1.coeff(0));
+      Numerical::Polynomial<K::RT, 3, 1> lower =
+          y_int.var_sub(1, 0, bound_2.coeff(1)) +
+          y_int.slice(1, bound_2.coeff(0));
+      auto y_bounded = upper + -lower;
+      auto x_int = y_bounded.integrate(0);
+
+      auto left = x_int.slice(0, verts[w_idx][0]).coeff(0);
+      auto right =
+          x_int.slice(0, verts[(w_idx + 1) % tri_verts][0])
+              .coeff(0);
+      integral += left + -right;
     }
+    return integral;
   }
-  return integral;
-}
-}
-;
+};
 
 /* Computes the k Wasserstein distance of the triangular
  * face to it's centroid */
 template <int k>
-Real triangle_w(const Face &face);
+K::RT triangle_w(const Face &face);
 
 template <>
-Real triangle_w<2>(const Face &face) {
+K::RT triangle_w<2>(const Face &face) {
   Point centroid = triangle_centroid(face);
   boost::variant<std::array<Triangle, 2>,
                  std::array<Triangle, 1> >
@@ -223,12 +272,13 @@ Real triangle_w<2>(const Face &face) {
 
 /* See "HOT: Hodge-Optimized Triangulations" for details on
  * the energy functional */
-Real hot_energy(const DT &dt) {
-  Real energy = 0.0;
+K::RT hot_energy(const DT &dt) {
+  K::RT energy = 0;
   for(auto face_itr = dt.finite_faces_begin();
       face_itr != dt.finite_faces_end(); face_itr++) {
-    energy +=
-        triangle_w<2>(*face_itr) * triangle_area(*face_itr);
+    K::RT area = triangle_area(*face_itr);
+    K::RT wasserstein = triangle_w<2>(*face_itr);
+    energy += wasserstein * area;
   }
   return energy;
 }
@@ -253,7 +303,7 @@ int main(int argc, char **argv) {
     }
     std::cout << std::endl;
   }
-  std::cout << "Mesh energy: " << hot_energy(dt)
-            << std::endl;
+  K::RT energy = hot_energy(dt);
+  std::cout << "Mesh energy: " << energy << std::endl;
   return 0;
 }
