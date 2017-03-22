@@ -22,6 +22,7 @@ using K = CGAL::Exact_predicates_exact_constructions_kernel;
 using DT = CGAL::Delaunay_triangulation_2<K>;
 using Face = DT::Face;
 using Point = DT::Point;
+using Vertex = DT::Vertex;
 
 using Triangle = CGAL::Triangle_2<K>;
 using Line = CGAL::Line_2<K>;
@@ -151,28 +152,7 @@ class triangle_w_helper<T, 2> {
   K::RT operator()(T &bounds) {
     K::RT integral = 0;
     for(auto area : bounds) {
-      /* Given a signed width of w, an initial x of x_0, two
-       * bounding segments with y = si x + offi, and a
-       * centroid located at (x_c, y_c), we need to compute:
-       * w**4*(-s1**3 - 3*s1 + s2**3 + 3*s2)/12 +
-       * w**3*(-off1*s1**2 - off1 + off2*s2**2 + off2 +
-       * s1**2*y_c + 2*s1*x_c - s2**2*y_c - 2*s2*x_c)/3 +
-       * w**2*(-off1**2*s1 + 2*off1*s1*y_c + 2*off1*x_c +
-       * off2**2*s2 - 2*off2*s2*y_c - 2*off2*x_c - s1*x_c**2
-       * - s1*y_c**2 + s2*x_c**2 + s2*y_c**2)/2 - w*(off1**3
-       * - 3*off1**2*y_c + 3*off1*x_c**2 + 3*off1*y_c**2 -
-       * off2**3 + 3*off2**2*y_c - 3*off2*x_c**2 -
-       * 3*off2*y_c**2)/3 + x_0**4*(s1**3 + 3*s1 - s2**3 -
-       * 3*s2)/12 + x_0**3*(off1*s1**2 + off1 - off2*s2**2 -
-       * off2 - s1**2*y_c - 2*s1*x_c + s2**2*y_c +
-       * 2*s2*x_c)/3 + x_0**2*(off1**2*s1 - 2*off1*s1*y_c -
-       * 2*off1*x_c - off2**2*s2 + 2*off2*s2*y_c +
-       * 2*off2*x_c + s1*x_c**2 + s1*y_c**2 - s2*x_c**2 -
-       * s2*y_c**2)/2 + x_0*(off1**3 - 3*off1**2*y_c +
-       * 3*off1*x_c**2 + 3*off1*y_c**2 - off2**3 +
-       * 3*off2**2*y_c - 3*off2*x_c**2 - 3*off2*y_c**2)/3
-       *
-       * Start by computing the lines used for boundaries
+      /* Start by computing the lines used for boundaries
        * and the width.
        */
       std::array<Point, tri_verts> verts = {
@@ -180,10 +160,10 @@ class triangle_w_helper<T, 2> {
       order_points(verts);
 
       /* Find the index of the non-vertical point
-                         * It's guaranteed to be either the
+       * It's guaranteed to be either the
        * leftmost or
-                         * rightmost point
-                         */
+       * rightmost point
+       */
       const int w_idx =
           (verts[0][0] != verts[1][0]) ? 0 : 2;
       // Compute the signed width
@@ -200,9 +180,11 @@ class triangle_w_helper<T, 2> {
       Vector dir_1 =
           Line(verts[w_idx], verts[(w_idx + 1) % tri_verts])
               .to_vector();
+      std::cout << "dir_1: " << dir_1 << std::endl;
       Vector dir_2 =
           Line(verts[w_idx], verts[(w_idx + 2) % tri_verts])
               .to_vector();
+      std::cout << "dir_2: " << dir_2 << std::endl;
       K::RT slope_1 = dir_1[1] / dir_1[0];
       K::RT slope_2 = dir_2[1] / dir_2[0];
       if((w_idx == 0 && slope_1 < slope_2) ||
@@ -217,6 +199,10 @@ class triangle_w_helper<T, 2> {
       bound_2.coeff(1) = slope_2;
       bound_2.coeff(0) =
           -verts[w_idx][0] * slope_2 + verts[w_idx][1];
+      std::cout << "y_1 = " << bound_1.coeff(1) << " x + "
+                << bound_1.coeff(0) << std::endl;
+      std::cout << "y_2 = " << bound_2.coeff(1) << " x + "
+                << bound_2.coeff(0) << std::endl;
 
       Numerical::Polynomial<K::RT, 2, 2> initial(
           (Tags::Zero_Tag()));
@@ -230,6 +216,16 @@ class triangle_w_helper<T, 2> {
           y_int.var_sub(1, 0, bound_2.coeff(1)) +
           y_int.slice(1, bound_2.coeff(0));
       auto y_bounded = upper + -lower;
+
+      std::cout << "(" << upper.coeff(3) << " - "
+                << lower.coeff(3) << ") x^3 + "
+                << "(" << upper.coeff(2) << " - "
+                << lower.coeff(2) << ") x^2 + "
+                << "(" << upper.coeff(1) << " - "
+                << lower.coeff(1) << ") x + "
+                << "(" << upper.coeff(0) << " - "
+                << lower.coeff(0) << ")" << std::endl;
+
       auto x_int = y_bounded.integrate(0);
 
       auto left = x_int.slice(0, verts[w_idx][0]).coeff(0);
@@ -283,7 +279,40 @@ K::RT hot_energy(const DT &dt) {
   return energy;
 }
 
+void test_tri_w2() {
+  DT dt;
+  dt.insert(Point(1, 1));
+  dt.insert(Point(2, 1));
+  dt.insert(Point(1, 2));
+  Face f(*dt.finite_faces_begin());
+  std::cout << "Face is valid: " << f.is_valid()
+            << std::endl;
+  for(int i = 0; i < tri_verts; i++) {
+    std::cout << "Vertex " << i << " : " << *f.vertex(i)
+              << std::endl;
+  }
+  std::cout << "Centroid: " << triangle_centroid(f)
+            << "; should be 1 + 1/3, 1 + 1/3" << std::endl;
+  boost::variant<std::array<Triangle, 2>,
+                 std::array<Triangle, 1> >
+      bounds = even_integral_bounds(f);
+  std::cout << "Used " << 2 - bounds.which()
+            << " as the number of triangles; should be 1"
+            << std::endl;
+  assert(bounds.which() == 1);
+  auto area = boost::get<std::array<Triangle, 1> >(bounds);
+  for(int i = 0; i < tri_verts; i++) {
+    std::cout << area[0].vertex(i) << std::endl;
+  }
+
+  K::RT value = triangle_w<2>(f);
+  std::cout << "Unit Right Triangle expected Wasserstein "
+               "Distance: 0.5. Calculated Distance: "
+            << value << std::endl;
+}
+
 int main(int argc, char **argv) {
+  test_tri_w2();
   DT dt;
   const int num_points = 20;
   generate_rand_dt(num_points, dt);
