@@ -149,7 +149,7 @@ class triangle_w_helper;
 template <typename T>
 class triangle_w_helper<T, 2> {
  public:
-  K::RT operator()(T &bounds) {
+  K::RT operator()(T &bounds, const Point &centroid) {
     K::RT integral = 0;
     for(auto area : bounds) {
       /* Start by computing the lines used for boundaries
@@ -180,11 +180,9 @@ class triangle_w_helper<T, 2> {
       Vector dir_1 =
           Line(verts[w_idx], verts[(w_idx + 1) % tri_verts])
               .to_vector();
-      std::cout << "dir_1: " << dir_1 << std::endl;
       Vector dir_2 =
           Line(verts[w_idx], verts[(w_idx + 2) % tri_verts])
               .to_vector();
-      std::cout << "dir_2: " << dir_2 << std::endl;
       K::RT slope_1 = dir_1[1] / dir_1[0];
       K::RT slope_2 = dir_2[1] / dir_2[0];
       if((w_idx == 0 && slope_1 < slope_2) ||
@@ -204,27 +202,28 @@ class triangle_w_helper<T, 2> {
       std::cout << "y_2 = " << bound_2.coeff(1) << " x + "
                 << bound_2.coeff(0) << std::endl;
 
-      Numerical::Polynomial<K::RT, 2, 2> initial(
+      Numerical::Polynomial<K::RT, 1, 2> initial_x_root(
           (Tags::Zero_Tag()));
-      initial.coeff(2, 0) = 1;
-      initial.coeff(0, 2) = 1;
+      initial_x_root.coeff(1, 0) = 1;
+      initial_x_root.coeff(0, 0) = -centroid[0];
+
+      Numerical::Polynomial<K::RT, 1, 2> initial_y_root(
+          (Tags::Zero_Tag()));
+      initial_y_root.coeff(0, 1) = 1;
+      initial_y_root.coeff(0, 0) = -centroid[1];
+
+      Numerical::Polynomial<K::RT, 2, 2> initial =
+          initial_x_root * initial_x_root +
+          initial_y_root * initial_y_root;
+
       auto y_int = initial.integrate(1);
       Numerical::Polynomial<K::RT, 3, 1> upper =
-          y_int.var_sub(1, 0, bound_1.coeff(1)) +
+          y_int.var_sub(1, bound_1) +
           y_int.slice(1, bound_1.coeff(0));
       Numerical::Polynomial<K::RT, 3, 1> lower =
-          y_int.var_sub(1, 0, bound_2.coeff(1)) +
+          y_int.var_sub(1, bound_2) +
           y_int.slice(1, bound_2.coeff(0));
       auto y_bounded = upper + -lower;
-
-      std::cout << "(" << upper.coeff(3) << " - "
-                << lower.coeff(3) << ") x^3 + "
-                << "(" << upper.coeff(2) << " - "
-                << lower.coeff(2) << ") x^2 + "
-                << "(" << upper.coeff(1) << " - "
-                << lower.coeff(1) << ") x + "
-                << "(" << upper.coeff(0) << " - "
-                << lower.coeff(0) << ")" << std::endl;
 
       auto x_int = y_bounded.integrate(0);
 
@@ -256,13 +255,13 @@ K::RT triangle_w<2>(const Face &face) {
     auto area =
         boost::get<std::array<Triangle, 2> >(bounds);
     return triangle_w_helper<std::array<Triangle, 2>, 2>()(
-        area);
+        area, centroid);
   } else {
     // std::array<Triangle, 1>
     auto area =
         boost::get<std::array<Triangle, 1> >(bounds);
     return triangle_w_helper<std::array<Triangle, 1>, 2>()(
-        area);
+        area, centroid);
   }
 }
 
