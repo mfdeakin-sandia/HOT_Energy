@@ -189,14 +189,14 @@ class triangle_w_helper<T, 2> {
          (w_idx == 2 && slope_1 > slope_2)) {
         std::swap(slope_1, slope_2);
       }
-      Numerical::Polynomial<K::RT, 1, 1> bound_1;
-      bound_1.coeff(1) = slope_1;
-      bound_1.coeff(0) =
-          -verts[w_idx][0] * slope_1 + verts[w_idx][1];
-      Numerical::Polynomial<K::RT, 1, 1> bound_2;
-      bound_2.coeff(1) = slope_2;
-      bound_2.coeff(0) =
-          -verts[w_idx][0] * slope_2 + verts[w_idx][1];
+      Numerical::Polynomial<double, 1, 1> bound_1;
+      bound_1.coeff(1) = CGAL::to_double(slope_1);
+      bound_1.coeff(0) = CGAL::to_double(
+          -verts[w_idx][0] * slope_1 + verts[w_idx][1]);
+      Numerical::Polynomial<double, 1, 1> bound_2;
+      bound_2.coeff(1) = CGAL::to_double(slope_2);
+      bound_2.coeff(0) = CGAL::to_double(
+          -verts[w_idx][0] * slope_2 + verts[w_idx][1]);
       std::cout << "y_1 = " << bound_1.coeff(1) << " x + "
                 << bound_1.coeff(0) << std::endl;
       std::cout << "y_2 = " << bound_2.coeff(1) << " x + "
@@ -212,24 +212,35 @@ class triangle_w_helper<T, 2> {
       initial_y_root.coeff(0, 1) = 1;
       initial_y_root.coeff(0, 0) = -centroid[1];
 
-      Numerical::Polynomial<K::RT, 2, 2> initial =
+      Numerical::Polynomial<K::RT, 2, 2> tmp =
           initial_x_root * initial_x_root +
           initial_y_root * initial_y_root;
+      Numerical::Polynomial<double, 2, 2> initial;
+      initial.coeff_iterator(
+          [&](const Array<int, initial.dim> &exponents) {
+            initial.coeff(exponents) =
+                CGAL::to_double(tmp.coeff(exponents));
+          });
 
       auto y_int = initial.integrate(1);
-      Numerical::Polynomial<K::RT, 3, 1> upper =
+      Numerical::Polynomial<double, 3, 1> upper =
           y_int.var_sub(1, bound_1) +
           y_int.slice(1, bound_1.coeff(0));
-      Numerical::Polynomial<K::RT, 3, 1> lower =
+      Numerical::Polynomial<double, 3, 1> lower =
           y_int.var_sub(1, bound_2) +
           y_int.slice(1, bound_2.coeff(0));
       auto y_bounded = upper + -lower;
 
       auto x_int = y_bounded.integrate(0);
 
-      auto left = x_int.slice(0, verts[w_idx][0]).coeff(0);
+      auto left =
+          x_int.slice(0, CGAL::to_double(verts[w_idx][0]))
+              .coeff(0);
       auto right =
-          x_int.slice(0, verts[(w_idx + 1) % tri_verts][0])
+          x_int
+              .slice(0,
+                     CGAL::to_double(
+                         verts[(w_idx + 1) % tri_verts][0]))
               .coeff(0);
       integral += left + -right;
     }

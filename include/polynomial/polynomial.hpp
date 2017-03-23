@@ -307,6 +307,8 @@ class Polynomial {
   template <typename, int, int>
   friend class Polynomial;
 
+  static constexpr const int dim = _dim;
+
  private:
   void coeff_iterator(const int exp_left, const int cur_dim,
                       Array<int, _dim> &exponents,
@@ -387,8 +389,6 @@ class Polynomial {
     }
     return cur_sum;
   }
-
-  static constexpr const int dim = _dim;
 
   static constexpr const int num_coeffs =
       CTMath::poly_degree_num_coeffs<int>(_degree, _dim);
@@ -542,9 +542,9 @@ class Polynomial<CoeffT, 0, _dim> {
   template <typename, int, int>
   friend class Polynomial;
 
- private:
   static constexpr const int dim = _dim;
 
+ private:
   static constexpr const int num_coeffs = 1;
   CoeffT value;
 
@@ -586,6 +586,8 @@ class Polynomial<CoeffT, _degree, 0> {
   template <typename, int, int>
   friend class Polynomial;
 
+  static constexpr const int dim = 0;
+
  private:
   static int get_coeff_idx() noexcept { return 0; }
 
@@ -595,8 +597,6 @@ class Polynomial<CoeffT, _degree, 0> {
                : exp_left > 0 ? DEGREE_RANGE_OVERFLOW
                               : DEGREE_RANGE_UNDERFLOW;
   }
-
-  static constexpr const int dim = 0;
 
   static constexpr const int num_coeffs = 1;
   CoeffT value;
