@@ -36,6 +36,12 @@ struct Array {
     }
   }
 
+  CUDA_CALLABLE Array(const T default_value) {
+    for(int i = 0; i < sz; i++) {
+      data[i] = default_value;
+    }
+  }
+
   CUDA_CALLABLE Array(std::initializer_list<T> src) {
     std::copy(src.begin(), src.end(), data);
   }

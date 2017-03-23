@@ -38,6 +38,10 @@ class Polynomial {
                   "least zero, otherwise it's degenerate");
   }
 
+  Polynomial(CoeffT default_value)
+      : lower_degree(default_value),
+        coeffs(default_value) {}
+
   template <typename... int_list,
             typename std::enable_if<
                 sizeof...(int_list) == _dim, int>::type = 0>
@@ -271,10 +275,10 @@ class Polynomial {
   Polynomial<CoeffT, other_degree, _dim> change_degree()
       const {
     Polynomial<CoeffT, other_degree, _dim> r(
-        Tags::Zero_Tag());
+        (Tags::Zero_Tag()));
     coeff_iterator([&](const Array<int, _dim> &exponents) {
       CoeffT value = coeff(exponents);
-      if(sum(exponents) > other_degree) {
+      if(CTMath::sum(exponents) > other_degree) {
         assert(value == 0);
       } else {
         r.coeff(exponents) = value;
@@ -404,6 +408,8 @@ class Polynomial<CoeffT, 0, _dim> {
   Polynomial() {}
 
   Polynomial(const Tags::Zero_Tag &) : value(0) {}
+
+  Polynomial(CoeffT defualt_value) : value(defualt_value) {}
 
   template <typename... int_list,
             typename std::enable_if<
@@ -554,6 +560,8 @@ class Polynomial<CoeffT, _degree, 0> {
   Polynomial() {}
 
   Polynomial(const Tags::Zero_Tag &) : value(0) {}
+
+  Polynomial(CoeffT defualt_value) : value(defualt_value) {}
 
   CoeffT coeff() const noexcept { return value; }
 
