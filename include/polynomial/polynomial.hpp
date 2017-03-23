@@ -238,29 +238,49 @@ class Polynomial {
     return s;
   }
 
-  Polynomial<CoeffT, _degree, _dim - 1> var_sub(
-      const int var_from, const int var_to,
-      const CoeffT scale) const {
-    Polynomial<CoeffT, _degree, _dim - 1> s(
+  template <int other_degree>
+  Polynomial<CoeffT, _degree * other_degree, _dim - 1>
+  var_sub(const int var_from,
+          const Polynomial<CoeffT, other_degree, _dim - 1>
+              &sub_val) const {
+    constexpr const int new_degree = _degree * other_degree;
+    Polynomial<CoeffT, new_degree, _dim - 1> s(
         (Tags::Zero_Tag()));
-    Array<CoeffT, _degree + 1> factors;
-    factors[0] = 1.0;
-    for(int i = 1; i < _degree + 1; i++) {
-      factors[i] = scale * factors[i - 1];
+    Array<Polynomial<CoeffT, new_degree, _dim - 1>,
+          new_degree>
+        powers((Tags::Zero_Tag()));
+    powers[0].coeff(
+        Array<int, _dim - 1>((Tags::Zero_Tag()))) = 1;
+    for(int i = 1; i < new_degree; i++) {
+      powers[i] = (powers[i - 1] * sub_val)
+                      .template change_degree<new_degree>();
     }
+
     coeff_iterator([&](const Array<int, _dim> &exponents) {
-      Array<int, _dim - 1> buf;
-      for(int i = 0; i < var_from; i++) {
-        buf[i] = exponents[i];
-      }
-      for(int i = var_from + 1; i < _dim; i++) {
-        buf[i - 1] = exponents[i];
-      }
-			int e = buf[var_from];
-      buf[var_to] += e;
-      s.coeff(buf) += coeff(exponents) * factors[e];
+      Polynomial<CoeffT, new_degree, _dim - 1> p(
+          (Tags::Zero_Tag()));
+      p.coeff(exponents.remove(var_from)) =
+          coeff(exponents);
+      s = s + ((powers[exponents[var_from]] *
+                p).template change_degree<new_degree>());
     });
     return s;
+  }
+
+  template <int other_degree>
+  Polynomial<CoeffT, other_degree, _dim> change_degree()
+      const {
+    Polynomial<CoeffT, other_degree, _dim> r(
+        Tags::Zero_Tag());
+    coeff_iterator([&](const Array<int, _dim> &exponents) {
+      CoeffT value = coeff(exponents);
+      if(sum(exponents) > other_degree) {
+        assert(value == 0);
+      } else {
+        r.coeff(exponents) = value;
+      }
+    });
+    return r;
   }
 
   template <

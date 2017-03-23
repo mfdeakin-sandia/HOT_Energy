@@ -69,6 +69,17 @@ struct Array {
     return *this;
   }
 
+  CUDA_CALLABLE Array<T, sz - 1> remove(int index) const {
+    Array<T, sz - 1> s;
+    for(int i = 0; i < index; i++) {
+      s[i] = data[i];
+    }
+    for(int i = index + 1; i < sz; i++) {
+      s[i - 1] = data[i];
+    }
+    return s;
+  }
+
   CUDA_CALLABLE static constexpr int size() { return sz; }
 
   template <typename... src_t>
