@@ -251,22 +251,25 @@ class Polynomial {
     Polynomial<CoeffT, new_degree, _dim - 1> s(
         (Tags::Zero_Tag()));
     Array<Polynomial<CoeffT, new_degree, _dim - 1>,
-          new_degree>
+          new_degree + 1>
         powers((Tags::Zero_Tag()));
     powers[0].coeff(
         Array<int, _dim - 1>((Tags::Zero_Tag()))) = 1;
-    for(int i = 1; i < new_degree; i++) {
+    for(int i = 1; i <= new_degree; i++) {
       powers[i] = (powers[i - 1] * sub_val)
                       .template change_degree<new_degree>();
     }
 
     coeff_iterator([&](const Array<int, _dim> &exponents) {
-      Polynomial<CoeffT, new_degree, _dim - 1> p(
-          (Tags::Zero_Tag()));
-      p.coeff(exponents.remove(var_from)) =
-          coeff(exponents);
-      s = s + ((powers[exponents[var_from]] *
-                p).template change_degree<new_degree>());
+      CoeffT value = coeff(exponents);
+      if(value != 0) {
+        Polynomial<CoeffT, _degree, _dim - 1> non_subs(
+            (Tags::Zero_Tag()));
+        non_subs.coeff(exponents.remove(var_from)) = value;
+        s = s +
+            (non_subs * powers[exponents[var_from]])
+                .template change_degree<new_degree>();
+      }
     });
     return s;
   }

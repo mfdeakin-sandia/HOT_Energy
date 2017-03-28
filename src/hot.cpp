@@ -224,11 +224,44 @@ class triangle_w_helper<T, 2> {
 
       auto y_int = initial.integrate(1);
       Numerical::Polynomial<double, 3, 1> upper =
-          y_int.var_sub(1, bound_1) +
-          y_int.slice(1, bound_1.coeff(0));
+          y_int.var_sub(1, bound_1);
+      std::cout << "Substituting y = y_1 into: ";
+      y_int.coeff_iterator(
+          [=](const Array<int, y_int.dim> &exponents) {
+            std::cout << y_int.coeff(exponents);
+            if(exponents[0] > 0) {
+              std::cout << " x";
+              if(exponents[0] > 1) {
+                std::cout << " ^ " << exponents[0];
+              }
+            }
+            if(exponents[1] > 0) {
+              std::cout << " y";
+              if(exponents[1] > 1) {
+                std::cout << " ^ " << exponents[1];
+              }
+            }
+            std::cout << "   ";
+          });
+      std::cout << std::endl << "Result: ";
+      ;
+      // 3.55556 y + -1.33333 y ^ 2 + 0.333333 y ^ 3 +
+      // -2.66667 x y + x ^ 2 y
+      // y = y_1 = -x + 3
+      // -1.33333 + -3.55556 x + 4.33333 x ^ 2 + -1 x ^ 3
+      upper.coeff_iterator(
+          [=](const Array<int, upper.dim> &exponents) {
+            std::cout << upper.coeff(exponents);
+            if(exponents[0] > 0) {
+              std::cout << " x";
+              if(exponents[0] > 1) {
+                std::cout << " ^ " << exponents[0];
+              }
+            }
+            std::cout << "   ";
+          });
       Numerical::Polynomial<double, 3, 1> lower =
-          y_int.var_sub(1, bound_2) +
-          y_int.slice(1, bound_2.coeff(0));
+          y_int.var_sub(1, bound_2);
       auto y_bounded = upper + -lower;
 
       auto x_int = y_bounded.integrate(0);
