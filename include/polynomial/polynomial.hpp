@@ -630,6 +630,28 @@ Polynomial<CoeffT, _degree, _dim> operator*(
     const Polynomial<CoeffT, _degree, _dim> &p) {
   return p * scalar;
 }
+
+template <typename CoeffT, int _degree, int _dim>
+std::ostream &operator<<(
+    std::ostream &os,
+    const Polynomial<CoeffT, _degree, _dim> &p) {
+  p.coeff_iterator([&](const Array<int, _dim> &exponents) {
+    CoeffT value = p.coeff(exponents);
+    os << value;
+    for(int i = 0; i < _dim; i++) {
+      if(exponents[i] != 0) {
+        os << " * x_" << i;
+        if(exponents[i] > 1) {
+          os << "**" << exponents[i];
+        }
+      }
+    }
+    if(exponents[0] != _degree) {
+      os << " + ";
+    }
+  });
+  return os;
+}
 }
 
 #endif  //_POLYNOMIAL_HPP_
