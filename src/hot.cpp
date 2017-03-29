@@ -1,6 +1,6 @@
 
+#include <CGAL/Cartesian.h>
 #include <CGAL/Delaunay_triangulation_2.h>
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/number_utils.h>
 
 #include <boost/variant/variant.hpp>
@@ -18,7 +18,7 @@ using RNG = std::mt19937_64;
 
 using Real = float;
 
-using K = CGAL::Exact_predicates_exact_constructions_kernel;
+using K = CGAL::Cartesian<double>;
 using DT = CGAL::Delaunay_triangulation_2<K>;
 using Face = DT::Face;
 using Point = DT::Point;
@@ -189,18 +189,14 @@ class triangle_w_helper<T, 2> {
          (w_idx == 2 && slope_1 > slope_2)) {
         std::swap(slope_1, slope_2);
       }
-      Numerical::Polynomial<double, 1, 1> bound_1;
-      bound_1.coeff(1) = CGAL::to_double(slope_1);
-      bound_1.coeff(0) = CGAL::to_double(
-          -verts[w_idx][0] * slope_1 + verts[w_idx][1]);
-      Numerical::Polynomial<double, 1, 1> bound_2;
-      bound_2.coeff(1) = CGAL::to_double(slope_2);
-      bound_2.coeff(0) = CGAL::to_double(
-          -verts[w_idx][0] * slope_2 + verts[w_idx][1]);
-      std::cout << "y_1 = " << bound_1.coeff(1) << " x + "
-                << bound_1.coeff(0) << std::endl;
-      std::cout << "y_2 = " << bound_2.coeff(1) << " x + "
-                << bound_2.coeff(0) << std::endl;
+      Numerical::Polynomial<K::RT, 1, 1> bound_1;
+      bound_1.coeff(1) = slope_1;
+      bound_1.coeff(0) =
+          -verts[w_idx][0] * slope_1 + verts[w_idx][1];
+      Numerical::Polynomial<K::RT, 1, 1> bound_2;
+      bound_2.coeff(1) = slope_2;
+      bound_2.coeff(0) =
+          -verts[w_idx][0] * slope_2 + verts[w_idx][1];
 
       Numerical::Polynomial<K::RT, 1, 2> initial_x_root(
           (Tags::Zero_Tag()));
@@ -212,68 +208,26 @@ class triangle_w_helper<T, 2> {
       initial_y_root.coeff(0, 1) = 1;
       initial_y_root.coeff(0, 0) = -centroid[1];
 
-      Numerical::Polynomial<K::RT, 2, 2> tmp =
+      Numerical::Polynomial<K::RT, 2, 2> initial =
           initial_x_root * initial_x_root +
           initial_y_root * initial_y_root;
-      Numerical::Polynomial<double, 2, 2> initial;
-      initial.coeff_iterator(
-          [&](const Array<int, initial.dim> &exponents) {
-            initial.coeff(exponents) =
-                CGAL::to_double(tmp.coeff(exponents));
-          });
 
       auto y_int = initial.integrate(1);
-      Numerical::Polynomial<double, 3, 1> upper =
+      Numerical::Polynomial<K::RT, 3, 1> upper =
           y_int.var_sub(1, bound_1);
-      std::cout << "Substituting y = y_1 into: ";
-      y_int.coeff_iterator(
-          [=](const Array<int, y_int.dim> &exponents) {
-            std::cout << y_int.coeff(exponents);
-            if(exponents[0] > 0) {
-              std::cout << " x";
-              if(exponents[0] > 1) {
-                std::cout << " ^ " << exponents[0];
-              }
-            }
-            if(exponents[1] > 0) {
-              std::cout << " y";
-              if(exponents[1] > 1) {
-                std::cout << " ^ " << exponents[1];
-              }
-            }
-            std::cout << "   ";
-          });
-      std::cout << std::endl << "Result: ";
-      ;
       // 3.55556 y + -1.33333 y ^ 2 + 0.333333 y ^ 3 +
       // -2.66667 x y + x ^ 2 y
       // y = y_1 = -x + 3
       // -1.33333 + -3.55556 x + 4.33333 x ^ 2 + -1 x ^ 3
-      upper.coeff_iterator(
-          [=](const Array<int, upper.dim> &exponents) {
-            std::cout << upper.coeff(exponents);
-            if(exponents[0] > 0) {
-              std::cout << " x";
-              if(exponents[0] > 1) {
-                std::cout << " ^ " << exponents[0];
-              }
-            }
-            std::cout << "   ";
-          });
       Numerical::Polynomial<double, 3, 1> lower =
           y_int.var_sub(1, bound_2);
       auto y_bounded = upper + -lower;
 
       auto x_int = y_bounded.integrate(0);
 
-      auto left =
-          x_int.slice(0, CGAL::to_double(verts[w_idx][0]))
-              .coeff(0);
+      auto left = x_int.slice(0, verts[w_idx][0]).coeff(0);
       auto right =
-          x_int
-              .slice(0,
-                     CGAL::to_double(
-                         verts[(w_idx + 1) % tri_verts][0]))
+          x_int.slice(0, verts[(w_idx + 1) % tri_verts][0])
               .coeff(0);
       integral += left + -right;
     }
@@ -324,40 +278,39 @@ K::RT hot_energy(const DT &dt) {
 
 void test_tri_w2() {
   DT dt;
-  dt.insert(Point(1, 1));
   dt.insert(Point(2, 1));
-  dt.insert(Point(1, 2));
+  dt.insert(Point(3, 1));
+  dt.insert(Point(2, 2));
   Face f(*dt.finite_faces_begin());
-  std::cout << "Face is valid: " << f.is_valid()
-            << std::endl;
   for(int i = 0; i < tri_verts; i++) {
     std::cout << "Vertex " << i << " : " << *f.vertex(i)
               << std::endl;
   }
-  std::cout << "Centroid: " << triangle_centroid(f)
-            << "; should be 1 + 1/3, 1 + 1/3" << std::endl;
   boost::variant<std::array<Triangle, 2>,
                  std::array<Triangle, 1> >
       bounds = even_integral_bounds(f);
-  std::cout << "Used " << 2 - bounds.which()
-            << " as the number of triangles; should be 1"
-            << std::endl;
   assert(bounds.which() == 1);
   auto area = boost::get<std::array<Triangle, 1> >(bounds);
   for(int i = 0; i < tri_verts; i++) {
     std::cout << area[0].vertex(i) << std::endl;
   }
 
+  std::cout
+      << std::endl
+      << "Computing Wasserstein distance to the dual point"
+      << std::endl
+      << std::endl;
   K::RT value = triangle_w<2>(f);
   std::cout << "Unit Right Triangle expected Wasserstein "
-               "Distance: 0.5. Calculated Distance: "
-            << value << std::endl;
+               "Distance: 5/90 (~0.0555555). Calculated Distance: "
+            << value << std::endl
+            << std::endl;
 }
 
 int main(int argc, char **argv) {
   test_tri_w2();
   DT dt;
-  const int num_points = 20;
+  const int num_points = 3;
   generate_rand_dt(num_points, dt);
   std::cout << "Generated the Delaunay Triangulation of "
             << num_points << " points" << std::endl;
