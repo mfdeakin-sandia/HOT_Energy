@@ -49,51 +49,10 @@ void generate_rand_dt(int num_points, DT &dt) {
   }
 }
 
-K::RT triangle_area(const Face &face) {
-  return Triangle(face.vertex(0)->point(),
-                  face.vertex(1)->point(),
-                  face.vertex(2)->point())
-      .area();
-}
-
 /* Computes the centroid of the triangle */
-Point triangle_centroid(const Face &face) {
-  return CGAL::centroid(face.vertex(0)->point(),
-                        face.vertex(1)->point(),
-                        face.vertex(2)->point());
-}
-
-/* Computes 7 triangles which can be used for the piecewise
- * integral of the Wasserstein distance with odd k */
-std::array<Triangle, 7> odd_integral_bounds(
-    const Face &face, const Point &centroid) {
-  const Line vertical(centroid, centroid + Vector(0, 1));
-  const Line horizontal(centroid, centroid + Vector(1, 0));
-  Segment edges[tri_edges];
-  for(int i = 0; i < tri_edges; i++) {
-    edges[i] = Segment(face.vertex(face.ccw(i))->point(),
-                       face.vertex(face.cw(i))->point());
-  }
-  for(int i = 0; i < tri_edges; i++) {
-    auto int_vert = CGAL::intersection(vertical, edges[i]);
-    // boost::optional - We need to verify that there is an
-    // intersection
-    if(int_vert.is_initialized()) {
-      // Any non-degenerate triangle will cause this
-      // intersection to be a point.
-      Point p = boost::get<Point>(int_vert.get());
-    }
-
-    auto int_horiz =
-        CGAL::intersection(horizontal, edges[i]);
-    // boost::optional - We need to verify that there is an
-    // intersection
-    if(int_horiz.is_initialized()) {
-      // Any non-degenerate triangle will cause this
-      // intersection to be a point.
-      Point p = boost::get<Point>(int_vert.get());
-    }
-  }
+Point triangle_centroid(const Triangle &face) {
+  return CGAL::centroid(face.vertex(0), face.vertex(1),
+                        face.vertex(2));
 }
 
 void order_points(std::array<Point, tri_verts> &verts) {
@@ -109,14 +68,13 @@ void order_points(std::array<Point, tri_verts> &verts) {
 }
 
 /* Computes 1 or 2 triangles which can be used for the
- * piecewise integral of the Wasserstein distance with even
+ * piecewise integral of the Wasserstein distance with
  * k */
 boost::variant<std::array<Triangle, 2>,
                std::array<Triangle, 1> >
-even_integral_bounds(const Face &face) {
+integral_bounds(const Triangle &face) {
   std::array<Point, tri_verts> verts = {
-      face.vertex(0)->point(), face.vertex(1)->point(),
-      face.vertex(2)->point()};
+      face.vertex(0), face.vertex(1), face.vertex(2)};
   order_points(verts);
   if(verts[0][0] == verts[1][0] ||
      verts[1][0] == verts[2][0]) {
@@ -238,14 +196,14 @@ class triangle_w_helper<T, 2> {
 /* Computes the k Wasserstein distance of the triangular
  * face to it's centroid */
 template <int k>
-K::RT triangle_w(const Face &face);
+K::RT triangle_w(const Triangle &face);
 
 template <>
-K::RT triangle_w<2>(const Face &face) {
-  Point centroid = triangle_centroid(face);
+K::RT triangle_w<2>(const Triangle &tri) {
+  Point centroid = triangle_centroid(tri);
   boost::variant<std::array<Triangle, 2>,
                  std::array<Triangle, 1> >
-      bounds = even_integral_bounds(face);
+      bounds = integral_bounds(tri);
   // Set to NaN until implemented
   Real distance = 0.0 / 0.0;
   if(bounds.which() == 0) {
@@ -263,46 +221,43 @@ K::RT triangle_w<2>(const Face &face) {
   }
 }
 
+Triangle face_to_tri(const Face &face) {
+  return Triangle(face.vertex(0)->point(),
+                  face.vertex(1)->point(),
+                  face.vertex(2)->point());
+}
+
 /* See "HOT: Hodge-Optimized Triangulations" for details on
  * the energy functional */
 K::RT hot_energy(const DT &dt) {
   K::RT energy = 0;
   for(auto face_itr = dt.finite_faces_begin();
       face_itr != dt.finite_faces_end(); face_itr++) {
-    K::RT area = triangle_area(*face_itr);
-    K::RT wasserstein = triangle_w<2>(*face_itr);
+    Triangle tri = face_to_tri(*face_itr);
+    K::RT area = tri.area();
+    K::RT wasserstein = triangle_w<2>(tri);
     energy += wasserstein * area;
   }
   return energy;
 }
 
 void test_tri_w2() {
-  DT dt;
-  dt.insert(Point(2, 1));
-  dt.insert(Point(3, 1));
-  dt.insert(Point(2, 2));
-  Face f(*dt.finite_faces_begin());
-  for(int i = 0; i < tri_verts; i++) {
-    std::cout << "Vertex " << i << " : " << *f.vertex(i)
-              << std::endl;
-  }
+  Triangle tri(Point(2, 1), Point(3, 1), Point(2, 2));
   boost::variant<std::array<Triangle, 2>,
                  std::array<Triangle, 1> >
-      bounds = even_integral_bounds(f);
+      bounds = integral_bounds(tri);
   assert(bounds.which() == 1);
   auto area = boost::get<std::array<Triangle, 1> >(bounds);
-  for(int i = 0; i < tri_verts; i++) {
-    std::cout << area[0].vertex(i) << std::endl;
-  }
 
   std::cout
       << std::endl
       << "Computing Wasserstein distance to the dual point"
       << std::endl
       << std::endl;
-  K::RT value = triangle_w<2>(f);
+  K::RT value = triangle_w<2>(tri);
   std::cout << "Unit Right Triangle expected Wasserstein "
-               "Distance: 5/90 (~0.0555555). Calculated Distance: "
+               "Distance: 5/90 (~0.0555555). Calculated "
+               "Distance: "
             << value << std::endl
             << std::endl;
 }
@@ -310,7 +265,7 @@ void test_tri_w2() {
 int main(int argc, char **argv) {
   test_tri_w2();
   DT dt;
-  const int num_points = 3;
+  const int num_points = 30;
   generate_rand_dt(num_points, dt);
   std::cout << "Generated the Delaunay Triangulation of "
             << num_points << " points" << std::endl;
