@@ -24,10 +24,10 @@ using Real = float;
 constexpr const int dims = 2;
 
 // exact predicates, but makes debugging and printing floating point in this routine hard
-using K = CGAL::Exact_predicates_exact_constructions_kernel;
+// using K = CGAL::Exact_predicates_exact_constructions_kernel;
 
 // floating point predicates in the plane
-// using K = CGAL::Cartesian<Real>;
+using K = CGAL::Cartesian<Real>;
 
 // real type underlying K
 using K_real = K::RT;
@@ -306,6 +306,72 @@ Point frac(const Segment &e, int i, int n)
   return e.source() + (i/ (double)(n-1)) * e.to_vector();
 }
 
+double wasserstein2_edge_edge_perp(const Segment &e0, const Segment &e1)
+{
+  std::cout << "The Wasserstein2 distance between segements " << pretty_print(e0) << " and " << pretty_print(e1) << " is" << std::endl;
+
+  const double c = sqrt(1/3.);
+
+  // vectors between some pairs of the four points
+  // ensure we match the closest ones
+  auto ds = e0.source() - e1.source();
+  auto dt = e0.target() - e1.target();
+  // for the perp case, the dot product of these is zero
+  auto d0 = e0.source() - e0.target();
+  auto d1 = e1.source() - e1.target();
+  
+  // debug
+  std::cout << "ds: " << ds << " length:" << sqrt( CGAL::to_double( ds.squared_length() ) ) << std::endl;;
+  std::cout << "dt: " << dt << " length:" << sqrt( CGAL::to_double( dt.squared_length() ) ) << std::endl;
+  std::cout << "d0: " << d0 << " length:" << sqrt( CGAL::to_double( d0.squared_length() ) ) << std::endl;
+  std::cout << "d1: " << d1 << " length:" << sqrt( CGAL::to_double( d1.squared_length() ) ) << std::endl;
+  
+  auto three_dots = ds * ds + dt * dt + d0 * d1;
+  const double W2_analytic = c * sqrt( CGAL::to_double( three_dots ) );
+  std::cout << "W2_analytic : " << W2_analytic << std::endl;
+
+  // verify by doing three dot products manually
+  if (1)
+  {
+    K_real ddss(0.), ddtt(0), dd01(0);
+    for (int i = 0; i < ds.dimension(); ++i)
+    {
+      ddss  += ds.cartesian(i) * ds.cartesian(i);
+      ddtt  += dt.cartesian(i) * dt.cartesian(i);
+      dd01 +=  d0.cartesian(i) * d1.cartesian(i);
+    }
+    std::cout << "dss: " << CGAL::to_double(ddss) << " ds*ds " << CGAL::to_double(ds*ds) << std::endl;
+    
+    const double W2_analytic_manual = c * sqrt( CGAL::to_double( ddss + ddtt + dd01 ) );
+    std::cout << "W2_manual   : " << W2_analytic_manual << std::endl;
+  }
+
+  
+  // verification against numeric integration
+  if (1)
+  {
+    // numeric
+    //    for (int n = 10; n < 123456; n *= 10)
+    for (int n = 1000; n < 1234; n *= 10)
+    {
+      K_real d_2(0.);
+      for (int i = 0; i < n; ++i )
+      {
+        Point p0 = frac( e0, i, n );
+        Point p1 = frac( e1, i, n );
+        d_2 += CGAL::squared_distance(p0,p1);
+      }
+      const double W2_numeric = sqrt( CGAL::to_double(d_2) / (double) n );
+      
+      std::cout << "W2_numeric  : " << W2_numeric << std::endl;
+      std::cout << "W2_numeric^2 / W2_analytic^2 = " << W2_numeric * W2_numeric / (W2_analytic * W2_analytic) << std::endl;
+      std::cout << "W2_analytic^2 / W2_numeric^2 = " << (W2_analytic * W2_analytic) / (W2_numeric * W2_numeric) << std::endl;
+    }
+  }
+  
+  return W2_analytic;
+}
+
 double wasserstein2_edge_edge(const Segment &e0, const Segment &e1)
 {
   // std::cout << "Computing the Wasserstein distance between segements " << pretty_print(e0) << " and " << pretty_print(e1) << std::endl;
@@ -413,13 +479,25 @@ void wasserstein_edge_edge_test()
   // appears that W2 is invariant to permutation of matching up integration points!
   // W1 order matters, best is a large spread, match close points together and match far points together
   // W1 best is interlaced, alternating points from each side, *not* 0-5 matched with 0-5
+  if (1)
+  {
+    Segment s01( Point(0,0), Point(1,0) );
+    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5, 0.0), Point(0.5,0.0)) );
+    
+    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5, 1.0), Point(0.5,2.0)) );
+    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5, 0.5), Point(0.5,1.5)) );
+    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5, 0.0), Point(0.5,1.0)) );
+    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5,-0.2), Point(0.5,0.8)) );
+    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5,-0.4), Point(0.5,0.6)) );
+    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5,-0.5), Point(0.5,0.5)) );
+  }
   if (0)
   {
-    wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(1,1), Point(1,3)) );      // 2.22  W2
-    wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(1,0), Point(1,2)) );      // 1.39
-    wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(1,-0.3), Point(1,1.7)) ); // 1.19
-    wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(1,-0.5), Point(1,1.5)) ); // 1.09
-    wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(1,-1), Point(1,1)) );     // 0.966
+    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1,1), Point(1,3)) );      // 2.22  W2
+    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1,0), Point(1,2)) );      // 1.39
+    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1,-0.3), Point(1,1.7)) ); // 1.19
+    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1,-0.5), Point(1,1.5)) ); // 1.09
+    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1,-1), Point(1,1)) );     // 0.966
   }
   
   // perp edges, not at midpoint
@@ -427,15 +505,15 @@ void wasserstein_edge_edge_test()
   // W1 is as in the above case
   if (0)
   {
-    wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(0,1), Point(0,3)) );      // 2.43 W2
-    wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(0,0), Point(0,2)) );      // 1.71
-    wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(0,-0.3), Point(0,1.7)) ); // 1.55
-    wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(0,-0.5), Point(0,1.5)) ); // 1.47
-    wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(0,-1), Point(0,1)) );     // 1.39
+    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0,1), Point(0,3)) );      // 2.43 W2
+    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0,0), Point(0,2)) );      // 1.71
+    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0,-0.3), Point(0,1.7)) ); // 1.55
+    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0,-0.5), Point(0,1.5)) ); // 1.47
+    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0,-1), Point(0,1)) );     // 1.39
   }
   
   // skew
-  if (1)
+  if (0)
   {
     wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(-1,1), Point(1,1)) );
     wasserstein2_edge_edge( Segment(p0,p1), Segment( Point(-1,1), Point(1,2)) );
