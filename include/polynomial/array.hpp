@@ -36,6 +36,12 @@ struct Array {
     }
   }
 
+  CUDA_CALLABLE Array(const T default_value) {
+    for(int i = 0; i < sz; i++) {
+      data[i] = default_value;
+    }
+  }
+
   CUDA_CALLABLE Array(std::initializer_list<T> src) {
     std::copy(src.begin(), src.end(), data);
   }
@@ -67,6 +73,17 @@ struct Array {
       data[i] = src[i];
     }
     return *this;
+  }
+
+  CUDA_CALLABLE Array<T, sz - 1> remove(int index) const {
+    Array<T, sz - 1> s;
+    for(int i = 0; i < index; i++) {
+      s[i] = data[i];
+    }
+    for(int i = index + 1; i < sz; i++) {
+      s[i - 1] = data[i];
+    }
+    return s;
   }
 
   CUDA_CALLABLE static constexpr int size() { return sz; }
