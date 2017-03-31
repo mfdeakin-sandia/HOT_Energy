@@ -1,5 +1,6 @@
 
 #include <hot.hpp>
+#include <random>
 
 void test_tri_w2() {
   Triangle tri(Point(2, 1), Point(3, 1), Point(2, 2));
@@ -28,7 +29,6 @@ constexpr const float min_pos = 10.0;
 constexpr const float max_pos = 20.0;
 
 void generate_rand_dt(int num_points, DT &dt) {
-  // scott is getting a link error, no std::random_device or boost::random_device
   std::random_device rd;
   RNG engine(rd());
   std::uniform_real_distribution<double> genPos(min_pos,
