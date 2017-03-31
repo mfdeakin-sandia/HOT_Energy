@@ -1,6 +1,10 @@
 // WassersteinEdgeEdge.hpp
 
+#ifndef WASSERSTEINEDGEEDGE_HPP
+#define WASSERSTEINEDGEEDGE_HPP
+
 // include these from somewhere else
+
 
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
@@ -88,3 +92,5 @@ public:
   // W1_oblique <- skip. This is complicated, because of the matching order.
 
 };
+
+#endif // WASSERSTEINEDGEEDGE_HPP

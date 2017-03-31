@@ -1,5 +1,9 @@
 // WassersteinEdgeEdgeTest.hpp
 
+#ifndef WASSERSTEINEDGEEDGETEST_HPP
+#define WASSERSTEINEDGEEDGETEST_HPP
+
+
 // include these from somewhere else
 
 #include <CGAL/Delaunay_triangulation_2.h>
@@ -73,3 +77,5 @@ int main(int argc, char **argv) {
   }
 }
 */
+
+#endif // WASSERSTEINEDGEEDGETEST_HPP
