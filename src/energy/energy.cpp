@@ -28,6 +28,7 @@ constexpr const float min_pos = 10.0;
 constexpr const float max_pos = 20.0;
 
 void generate_rand_dt(int num_points, DT &dt) {
+  // scott is getting a link error, no std::random_device or boost::random_device
   std::random_device rd;
   RNG engine(rd());
   std::uniform_real_distribution<double> genPos(min_pos,
@@ -39,12 +40,6 @@ void generate_rand_dt(int num_points, DT &dt) {
 }
 
 int main(int argc, char **argv) {
-  // Test Wasserstein distance between two segments
-  if(0) {
-    wasserstein_edge_edge_test();
-    test_tri_w2();
-    return 0;
-  }
 
   // Test hot energy between triangle and triangle* == point
 
