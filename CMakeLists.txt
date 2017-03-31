@@ -6,7 +6,7 @@ project(hot-error)
 find_package(CGAL REQUIRED COMPONENTS Core)
 include(${CGAL_USE_FILE})
 
-include_directories(include/hot include/polynomial)
+include_directories(include/hot include/polynomial include/Wasserstein)
 
 # get xcode project to show include files
 file(GLOB_RECURSE INCS "*.h")

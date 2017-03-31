@@ -14,11 +14,6 @@ std::string WassersteinEdgeEdgeTest::pretty_print( const Segment &e )
   return ss.str();
 }
 
-Point WassersteinEdgeEdgeTest::frac(const Segment &e, int i, int n)
-{
-  return e.source() + (i/ (double)(n-1)) * e.to_vector();
-}
-
 double WassersteinEdgeEdgeTest::w2_perp(const Segment &e0, const Segment &e1)
 {
   std::cout << "The Wasserstein2 distance between segements " << pretty_print(e0) << " and " << pretty_print(e1) << " is" << std::endl;
@@ -90,6 +85,7 @@ double WassersteinEdgeEdgeTest::w2_perp(const Segment &e0, const Segment &e1)
   return W2_analytic;
 }
 
+// could templatize this to get rid of special case for p==2, but why bother for this research code?
 double WassersteinEdgeEdgeTest::w_p(int p, const Segment &e0, const Segment &e1)
 {
   // std::cout << "Computing the Wasserstein distance between segements " << pretty_print(e0) << " and " << pretty_print(e1) << std::endl;
@@ -114,16 +110,19 @@ double WassersteinEdgeEdgeTest::w_p(int p, const Segment &e0, const Segment &e1)
   // consider all possible pairings of integration points
   // go through all the points of e0 in order
   // go through all the points of e1 in all possible permutations
-
+  // for general p
   double min_dp_double = std::numeric_limits<double>::max();
   double worst_dp_double = 0.;
+
+  // for p == 2
   K_real min_d2( min_dp_double );
   K_real worst_d2( worst_dp_double );
 
   // for all permutations
   do
   {
-    
+
+    // compute d2 or dp for this permutation    
     K_real d2(0.);
     double dp_double(0.);
     
@@ -137,40 +136,59 @@ double WassersteinEdgeEdgeTest::w_p(int p, const Segment &e0, const Segment &e1)
       if (p==2)
         d2 += squared_d;
       else
-      {
         dp_double += pow( CGAL::to_double( squared_d ), (int) (p / 2) );  // W_p
-      }
 
 //      std::cout << "i: " << i << " p:" << p0 << " to j:" << ind[i] << " q:" << p1 << " d^2:" << d2 << " == " << d2_float << std::endl;
     }
-//    std::cout << "d2:" << d2 << std::endl;
-//     std::cout << "  " << d2;
-    
     // d2 = sum of distances^2 for this permutation
-    // best so far?
-    zzyk
-    if ( (p==2 ? d2 < min_d2 : dp_double < min_dp_double ) )
+    // std::cout << "d2:" << d2 << std::endl;
+    // std::cout << "  " << d2;
+
+    // best / worst so far?
+    if (p==2) // use exact d2
     {
-      best_ind = ind;
-      min_d2 = d2;
-//      std::cout << "new min :" << min_d2 << std::endl;
+      if ( d2 < min_d2 ) // best 
+      {
+        best_ind = ind;
+        min_d2 = d2;
+        // std::cout << "new min :" << min_d2 << std::endl;
+      }
+      if ( d2 > worst_d2 ) // worst
+      {
+        worst_ind = ind;
+        worst_d2 = d2;
+        // std::cout << "new worst :" << worst_d2 << std::endl;
+      }
     }
-    if ( (p==2 ? d2 > worst_d2 : dp_double > worst_dp_double ) )
+    // p != 2
+    else  // use double comparison
     {
-      worst_ind = ind;
-      worst_d2 = d2;
-//      std::cout << "new worst :" << worst_d2 << std::endl;
+      if ( dp_double < min_dp_double ) // best
+      {
+        best_ind = ind;
+        min_dp_double = dp_double;
+      }
+      if ( dp_double > worst_dp_double )
+      {
+        worst_ind = ind;
+        worst_dp_double = dp_double;
+        // std::cout << "new worst :" << worst_dp_double << std::endl;
+      }
     }
+    
 
   } while ( std::next_permutation(ind.begin(), ind.end()) );
   // if permutation speed becomes important, try http://howardhinnant.github.io/combinations.html
   
-  auto min_d = sqrt( CGAL::to_double(min_d2 / n) ); // W2
-  auto worst_d = sqrt( CGAL::to_double(worst_d2 / n) ); // W2
-  // auto min_d = CGAL::to_double(min_d2) / (double) n; // W1
-  // auto worst_d = CGAL::to_double(worst_d2) / (double) n; // W1
+  const double min_d = pow( 
+    p == 2 ? CGAL::to_double(min_d2 / n) : (min_dp_double / n), 
+    1.0 / p); 
   
-  std::cout << "\nThe Wasserstein2 distance between segements " << pretty_print(e0) << " and " << pretty_print(e1) << " was " << min_d << std::endl;
+  const double worst_d = pow( 
+    p == 2 ? CGAL::to_double(worst_d2 / n) : (worst_dp_double / n), 
+    1.0 / p ); 
+    
+  std::cout << "\nThe Wasserstein" << p << " distance between segements " << pretty_print(e0) << " and " << pretty_print(e1) << " was " << min_d << std::endl;
   std::cout << "From permutation  :";
   for ( auto p : best_ind )
     std::cout << " " << p;
@@ -184,8 +202,17 @@ double WassersteinEdgeEdgeTest::w_p(int p, const Segment &e0, const Segment &e1)
   return min_d;
 }
 
-void wasserstein_edge_edge_test()
+void WassersteinEdgeEdgeTest::test()
 {
+  // discoveries:
+  // perp edges at midpoint
+  // of uniform length
+  // appears that W2 is invariant to permutation of matching up integration points!, even if not at midpoint
+  // W1 order matters, best is a large spread, match close points together and match far points together
+  // W1 best is interlaced, alternating points from each side, *not* 0-5 matched with 0-5
+  
+  // ======= test sets
+
   // create two test edges
   Point p0(0,0);
   Point p1(2,0);
@@ -196,63 +223,127 @@ void wasserstein_edge_edge_test()
   Segment e0(p0,p1);
   Segment e1(p0,p1);
 
-  // compute distance
-//  wasserstein2_edge_edge( Segment(p0,p1), Segment(p0,p1) );
-//  wasserstein2_edge_edge( Segment(p0,p1), Segment(p1,p0) );
+//  std::vector< std::pair<Segment,Segment> > e1_perp = {s01, s01, s01, s01, s01, s01, s01};
+//  std::vector<Segment>e2_perp = {
+
+  using std::vector;
+  using std::pair;
   
-  // perp edges at midpoint
-  // of uniform length
-  // appears that W2 is invariant to permutation of matching up integration points!
-  // W1 order matters, best is a large spread, match close points together and match far points together
-  // W1 best is interlaced, alternating points from each side, *not* 0-5 matched with 0-5
-  if (1)
+  // perpendicular, at midpoint, unit length
+  Segment s01( Point(0,0), Point(1,0) );
+  vector< pair<Segment,Segment> > e_perp =
   {
-    Segment s01( Point(0,0), Point(1,0) );
-    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5, 0.0), Point(0.5,0.0)) );
+    { s01, Segment( Point(0.5, 0.0), Point(0.5,0.0)) },
+    { s01, Segment( Point(0.5, 0.0), Point(0.5,0.0)) },
+    { s01, Segment( Point(0.5, 1.0), Point(0.5,2.0)) },
+    { s01, Segment( Point(0.5, 0.5), Point(0.5,1.5)) },
+    { s01, Segment( Point(0.5, 0.0), Point(0.5,1.0)) },
+    { s01, Segment( Point(0.5,-0.2), Point(0.5,0.8)) },
+    { s01, Segment( Point(0.5,-0.4), Point(0.5,0.6)) },
+    { s01, Segment( Point(0.5,-0.5), Point(0.5,0.5)) }
+  };
+  
+  // perpendicular, at midpoint, length 2
+  Segment s02( Point(0,0), Point (2,0) );
+  vector< pair<Segment,Segment> > e_perp2 =
+  {
+    { s02, Segment( Point(1,1), Point(1,3)) },
+    { s02, Segment( Point(1,0), Point(1,2)) },
+    { s02, Segment( Point(1,-0.3), Point(1,1.7)) },
+    { s02, Segment( Point(1,-0.5), Point(1,1.5)) },
+    { s02, Segment( Point(1,-1), Point(1,1)) }
+  };
+
+  // perpendicular, at midpoint, different lengths
+  Segment slong( Point(-0.5,0), Point (2.5,0) );
+  vector< pair<Segment,Segment> > e_perp_long =
+  {
+    { slong, Segment( Point(1,1), Point(1,3)) },
+    { slong, Segment( Point(1,0), Point(1,2)) },
+    { slong, Segment( Point(1,-0.3), Point(1,1.7)) },
+    { slong, Segment( Point(1,-0.5), Point(1,1.5)) },
+    { slong, Segment( Point(1,-1), Point(1,1)) }
+  };
+
+  // perpendicular, but not at midpoint, same lengths
+  vector< pair<Segment,Segment> > e_perp_offset =
+  {
+    { s02, Segment( Point(0,1), Point(0,3)) },
+    { s02, Segment( Point(0,0), Point(0,2)) },
+    { s02, Segment( Point(0,-0.3), Point(0,1.7)) },
+    { s02, Segment( Point(0,-0.5), Point(0,1.5)) },
+    { s02, Segment( Point(0,-1), Point(0,1))  }
+  };
+
+  // perpendicular, but not at midpoint, different lengths
+  Segment so_long( Point(0,0), Point (2.5,0) );
+  vector< pair<Segment,Segment> > e_perp_offset_long = e_perp_offset;
+  for ( int i = 0; i < e_perp_offset_long.size(); ++i )
+    e_perp_offset_long[i].first = so_long;
+  
+  vector< pair<Segment,Segment> > e_oblique =
+  {
+    { s02, Segment( Point(-1,1), Point(1,1) ) },
+    { s02, Segment( Point(-1,1), Point(1,2) ) },
+    { s02, Segment( Point(-1,1), Point(1,3) ) },
     
-    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5, 1.0), Point(0.5,2.0)) );
-    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5, 0.5), Point(0.5,1.5)) );
-    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5, 0.0), Point(0.5,1.0)) );
-    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5,-0.2), Point(0.5,0.8)) );
-    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5,-0.4), Point(0.5,0.6)) );
-    wasserstein2_edge_edge_perp( s01, Segment( Point(0.5,-0.5), Point(0.5,0.5)) );
-  }
-  if (1)
-  {
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1,1), Point(1,3)) );      // 2.22  W2
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1,0), Point(1,2)) );      // 1.39
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1,-0.3), Point(1,1.7)) ); // 1.19
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1,-0.5), Point(1,1.5)) ); // 1.09
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1,-1), Point(1,1)) );     // 0.966
-  }
-  
-  // perp edges, not at midpoint
-  // appears that W2 is invariant to permutation of matching up integration points!
-  // W1 is as in the above case
-  if (1)
-  {
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0,1), Point(0,3)) );      // 2.43 W2
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0,0), Point(0,2)) );      // 1.71
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0,-0.3), Point(0,1.7)) ); // 1.55
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0,-0.5), Point(0,1.5)) ); // 1.47
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0,-1), Point(0,1)) );     // 1.39
-  }
-  
-  // oblique
-  if (1)
-  {
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(-1,1), Point(1,1)) );
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(-1,1), Point(1,2)) );
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(-1,1), Point(1,3)) );
+    { s02, Segment( Point(0.2,1), Point(1.8,1) ) },
+    { s02, Segment( Point(0.2,1), Point(1.8,2) ) },
+    { s02, Segment( Point(0.2,1), Point(1.8,3) ) },
+    
+    { s02, Segment( Point(0.2,-0.3), Point(1.8,0.3) ) },
+    { s02, Segment( Point(0.2,-0.3), Point(1.8,0.9) ) },
+    { s02, Segment( Point(0.2,-0.3), Point(1.5,1.8) ) },
+    { s02, Segment( Point(1.5,-0.3), Point(0.2,1.8) ) }
+  };
 
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0.2,1), Point(1.8,1)) );
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0.2,1), Point(1.8,2)) );
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0.2,1), Point(1.8,3)) );
+  //test sets:
+  //  e_perp
+  //  e_perp2
+  //  e_perp_long
+  //  e_perp_offset
+  //  e_perp_offset_long
+  //  e_oblique
 
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0.2,-0.3), Point(1.8,0.3)) );
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0.2,-0.3), Point(1.8,0.9)) );
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(0.2,-0.3), Point(1.5,1.8)) );
-    wasserstein2_edge_edge_perp( Segment(p0,p1), Segment( Point(1.5,-0.3), Point(0.2,1.8)) );
+  // ======== actual tests
+  if (1)
+  {
+    w2_perp( e0, e1 ); //coincident, should return zero?
+  }
+  if (1)
+  {
+    for (auto ep : e_perp)
+      w2_perp( ep.first, ep.second );
+  }
+  if (1)
+  {
+    for (auto ep : e_perp2)
+      w2_perp( ep.first, ep.second );
+  }
+  if (1)
+  {
+    for (auto ep : e_perp_long)
+      w2_perp( ep.first, ep.second );
+  }
+  if (1)
+  {
+    for (auto ep : e_perp_offset)
+      w2_perp( ep.first, ep.second );
+  }
+  if (1)
+  {
+    for (auto ep : e_perp_offset_long)
+      w2_perp( ep.first, ep.second );
+  }
+  if (1)
+  {
+    for (auto ep : e_perp2)
+      w2_perp( ep.first, ep.second );
+  }
+  if (1)
+  {
+    for (auto ep : e_oblique)
+      w2_perp( ep.first, ep.second );
   }
 }
 

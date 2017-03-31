@@ -63,6 +63,7 @@ public:
   // test the above for a bunch of different segments
   static
   void test();
+
 };
 
 // e.g.
