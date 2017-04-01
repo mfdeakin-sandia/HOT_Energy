@@ -31,5 +31,6 @@ using K_real = K::RT;
 using DT = CGAL::Delaunay_triangulation_2<K>;
 using Point = DT::Point;
 using Segment = CGAL::Segment_2<K>;
+using Vector = CGAL::Vector_2<K>;
 
 #endif // WASSERSTEINKERNEL_HPP

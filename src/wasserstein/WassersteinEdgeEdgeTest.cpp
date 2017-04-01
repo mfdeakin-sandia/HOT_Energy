@@ -14,6 +14,116 @@ std::string WassersteinEdgeEdgeTest::pretty_print( const Segment &e )
   return ss.str();
 }
 
+double WassersteinEdgeEdgeTest::w1_edge_dual(const Segment &e0, Segment e1)
+{
+  std::cout << "\n======\nThe Wasserstein1 distance between primal " << pretty_print(e0) << " and dual " << pretty_print(e1) << " segment is" << std::endl;
+
+  // assume e0 is the primal, e1 the dual edge.
+  
+  // compute fraction of e1 on the other side of e0
+  
+  Point mid = CGAL::midpoint( e0.source(), e0.target() );
+  
+  Vector v_ms = e1.source() - mid;
+  Vector v_mt = e1.target() - mid;
+
+  // crosses if dot product is negative
+  double T(0.), U(1.), W1A(0.);
+  // segments from point at parameter T out to the end of the segment
+  Segment sT1_0, sT1_1;
+  if ( v_ms * v_mt < 0. )
+  {
+    // find T, fraction of e1 on both sides of e0
+    auto ls = v_ms.squared_length();
+    auto lt = v_mt.squared_length();
+    // std::cout << " ls: " << ls << " lt: " << lt << std::endl;
+    
+    // flip e1 so source is always closer to midpoint than its target
+    if ( ls > lt )
+    {
+      e1 = e1.opposite();
+      std::swap(ls,lt);
+    }
+    assert( ls <= lt );
+    T = sqrt( CGAL::to_double(ls) / CGAL::to_double( e1.squared_length() ) );
+    T = std::min( T, 0.5 );
+    U = 1 - 2. * T;
+    U = std::max( U, 0. );
+    U = std::min( U, 1. );
+    
+    // analytic solution to cross part
+    const double f = sqrt( CGAL::to_double( e0.squared_length() + e1.squared_length() ) );
+    W1A = T * T * f; // there are two of them, each contributing 1/2 of this quantity
+    
+    sT1_0 = Segment( frac( e0, 0.5 + T ), e0.target() );
+    sT1_1 = Segment( frac( e1, 2.*T    ), e1.target() );
+    
+    // verify by computing W1A numerically:
+    if (1)
+    {
+      //    for (int n = 10; n < 123456; n *= 10)
+      for (int n = 1000; n < 1234; n *= 10)
+      {
+        Segment e0_test = Segment( mid, frac(e0, 0.5 + T) );
+        Segment e1_test = Segment( mid, frac(e1, 2.0 * T) );
+        double d_2(0.);
+        for (int i = 0; i < n; ++i )
+        {
+          Point p0 = frac( e0_test, i, n );
+          Point p1 = frac( e1_test, i, n );
+          d_2 += sqrt( CGAL::to_double( CGAL::squared_distance(p0,p1) ) );
+        }
+        const double W1A_numeric = (2.0 * T) * d_2 / (double) n;
+        std::cout << "W1A_numeric  : " << W1A_numeric << " relative error: " << (W1A - W1A_numeric) / (W1A + W1A_numeric) << std::endl;
+      }
+    }
+  }
+  // doesn't cross
+  else
+  {
+    T = 0.;
+    U = 1.;
+    sT1_0 = Segment( mid, e0.target() );
+    sT1_1 = e1;
+  }
+  
+  // The analytic solution to the other part is messy, the integral of the square root of an imperfect square
+  // we could do it using this:
+  // http://math.stackexchange.com/questions/390080/definite-integral-of-square-root-of-polynomial
+  // or trig substitutions
+  // For now, just do it numerically
+//  const int n = 1001;
+  const int n = 101;
+  double d_sum(0.);
+  for (int i = 0; i < n; ++i)
+  {
+    const Point p = frac(sT1_0, i, n );
+    const Point q = frac(sT1_1, i, n );
+    const double d = sqrt( CGAL::to_double( CGAL::squared_distance(p, q) ) );
+    d_sum += d;
+    // should this be doubled, one for each side? I don't think so, I think the density is already taken care of.
+    // We can imagine folding so that both parts of the horizontal edge lie on top of each other, doubling the density.
+  }
+  double W1B = U * d_sum / (double) n;
+  
+  const double W1 = W1A + W1B;
+  
+  std::cout << "T: " << T << " U:" << U << " midpoint:" << mid << std::endl;
+  std::cout << "W1A + W1B = W1\n" << W1A << " + " << W1B << " = " << W1 << std::endl;
+  
+  // compare to numerical integration, using any old ordering of the points of integration
+  if (1)
+  {
+    const double W1_verify = w_p(1, e0, e1);
+    const double rel_error = (W1 - W1_verify) / ( W1 + W1_verify );
+    std::cout << "W1 via permutated integration of a handful of points = " << W1_verify << ". Relative error = " << rel_error << std::endl;
+  }
+  
+  // compare to numerical integration,
+  
+  return W1;
+}
+
 double WassersteinEdgeEdgeTest::w2_perp(const Segment &e0, const Segment &e1)
 {
   std::cout << "The Wasserstein2 distance between segements " << pretty_print(e0) << " and " << pretty_print(e1) << " is" << std::endl;
@@ -96,7 +206,7 @@ double WassersteinEdgeEdgeTest::w_p(int p, const Segment &e0, const Segment &e1)
   // n = number of integration points,
   // if using exact,   n <= 7 for fast, n = 8 involves 15 second wait
   // if using Cartesian, n=8 is instant, n = 10 takes 30 seconds,
-  const int n=6;
+  const int n=8; // 6
   assert( n > 1 );
   assert( p >= 0 );
 
@@ -136,7 +246,7 @@ double WassersteinEdgeEdgeTest::w_p(int p, const Segment &e0, const Segment &e1)
       if (p==2)
         d2 += squared_d;
       else
-        dp_double += pow( CGAL::to_double( squared_d ), (int) (p / 2) );  // W_p
+        dp_double += pow( CGAL::to_double( squared_d ), ( 0.5 * (double) p) );  // W_p
 
 //      std::cout << "i: " << i << " p:" << p0 << " to j:" << ind[i] << " q:" << p1 << " d^2:" << d2 << " == " << d2_float << std::endl;
     }
@@ -167,6 +277,7 @@ double WassersteinEdgeEdgeTest::w_p(int p, const Segment &e0, const Segment &e1)
       {
         best_ind = ind;
         min_dp_double = dp_double;
+        // std::cout << "new min :" << min_dp_double << std::endl;
       }
       if ( dp_double > worst_dp_double )
       {
@@ -233,14 +344,12 @@ void WassersteinEdgeEdgeTest::test()
   Segment s01( Point(0,0), Point(1,0) );
   vector< pair<Segment,Segment> > e_perp =
   {
-    { s01, Segment( Point(0.5, 0.0), Point(0.5,0.0)) },
-    { s01, Segment( Point(0.5, 0.0), Point(0.5,0.0)) },
-    { s01, Segment( Point(0.5, 1.0), Point(0.5,2.0)) },
-    { s01, Segment( Point(0.5, 0.5), Point(0.5,1.5)) },
-    { s01, Segment( Point(0.5, 0.0), Point(0.5,1.0)) },
-    { s01, Segment( Point(0.5,-0.2), Point(0.5,0.8)) },
+    { s01, Segment( Point(0.5,-0.5), Point(0.5,0.5)) },
     { s01, Segment( Point(0.5,-0.4), Point(0.5,0.6)) },
-    { s01, Segment( Point(0.5,-0.5), Point(0.5,0.5)) }
+    { s01, Segment( Point(0.5,-0.2), Point(0.5,0.8)) },
+    { s01, Segment( Point(0.5, 0.0), Point(0.5,1.0)) },
+    { s01, Segment( Point(0.5, 0.5), Point(0.5,1.5)) },
+    { s01, Segment( Point(0.5, 1.0), Point(0.5,2.0)) }
   };
   
   // perpendicular, at midpoint, length 2
@@ -306,45 +415,70 @@ void WassersteinEdgeEdgeTest::test()
   //  e_oblique
 
   // ======== actual tests
+  // W1
   if (1)
   {
-    w2_perp( e0, e1 ); //coincident, should return zero?
+    if (1)
+    {
+      for (auto ep : e_perp)
+        w1_edge_dual(ep.first, ep.second);
+    }
+    if (1)
+    {
+      for (auto ep : e_perp2)
+        w1_edge_dual(ep.first, ep.second);
+    }
+    if (1)
+    {
+      for (auto ep : e_perp_long)
+        w1_edge_dual(ep.first, ep.second);
+    }
+    // offset is not implemented, won't work
   }
-  if (1)
+
+  // W2
+  if (0)
   {
-    for (auto ep : e_perp)
-      w2_perp( ep.first, ep.second );
-  }
-  if (1)
-  {
-    for (auto ep : e_perp2)
-      w2_perp( ep.first, ep.second );
-  }
-  if (1)
-  {
-    for (auto ep : e_perp_long)
-      w2_perp( ep.first, ep.second );
-  }
-  if (1)
-  {
-    for (auto ep : e_perp_offset)
-      w2_perp( ep.first, ep.second );
-  }
-  if (1)
-  {
-    for (auto ep : e_perp_offset_long)
-      w2_perp( ep.first, ep.second );
-  }
-  if (1)
-  {
-    for (auto ep : e_perp2)
-      w2_perp( ep.first, ep.second );
-  }
-  if (1)
-  {
-    for (auto ep : e_oblique)
-      w2_perp( ep.first, ep.second );
-  }
+    if (1)
+    {
+      w2_perp( e0, e1 ); //coincident, should return zero?
+    }
+    if (1)
+    {
+      for (auto ep : e_perp)
+        w2_perp( ep.first, ep.second );
+    }
+    if (1)
+    {
+      for (auto ep : e_perp2)
+        w2_perp( ep.first, ep.second );
+    }
+    if (1)
+    {
+      for (auto ep : e_perp_long)
+        w2_perp( ep.first, ep.second );
+    }
+    if (1)
+    {
+      for (auto ep : e_perp_offset)
+        w2_perp( ep.first, ep.second );
+    }
+    if (1)
+    {
+      for (auto ep : e_perp_offset_long)
+        w2_perp( ep.first, ep.second );
+    }
+    if (1)
+    {
+      for (auto ep : e_perp2)
+        w2_perp( ep.first, ep.second );
+    }
+    if (1)
+    {
+      for (auto ep : e_oblique)
+        w2_perp( ep.first, ep.second );
+    }
+  } // W2
 }
 
 // e.g.

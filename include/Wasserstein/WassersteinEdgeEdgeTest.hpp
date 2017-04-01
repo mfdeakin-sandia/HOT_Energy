@@ -14,12 +14,28 @@ public:
   static
   std::string pretty_print( const Segment &e );
 
+  static
+  Point frac(const Segment &e, double f)
+  {
+    return e.source() + f * e.to_vector();
+  }
   // return the point i/(n-1) from e.source to e.target
   static
   Point frac(const Segment &e, int i, int n)
   {
-    return e.source() + (i/ (double)(n-1)) * e.to_vector();
+    return frac( e, (i/ (double)(n-1)) );
   }
+
+  // compute W1 "efficiently"
+  // for an edge and its dual, 
+  // i.e. for two perpendicular segments, where the affine hull of one passes through the midpoint of the other,
+  // Compute several different ways for verification.
+  // The numerical verification uses the permutation, so isn't very accurate and
+  // is limited to only a few integration points, but seems to converge to what I'm calculating.
+  // The numerical integration always gives a larger answer than the fast computation,
+  // which is consistent with the matching being poor for a coarse set of points.
+  static 
+  double w1_edge_dual(const Segment &e0, Segment e1);
 
   // compute W2 for two perpendicular segments, several different ways, to verify
   static
