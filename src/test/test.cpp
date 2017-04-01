@@ -99,7 +99,7 @@ TEST_CASE("Unit Right Triangle", "[HOT]") {
       K_real energy = triangle_w<2>(tri[i]);
 
       REQUIRE(std::abs(energy * 18 - 1) <
-              18 * max_rel_error);
+              max_rel_error);
     }
   }
 }
