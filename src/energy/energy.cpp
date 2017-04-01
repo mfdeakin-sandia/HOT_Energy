@@ -1,104 +1,6 @@
 
 #include <hot.hpp>
-
-void wasserstein_edge_edge_test() {
-  // create two test edges
-  Point p0(0, 0);
-  Point p1(2, 0);
-  Point p2(1, 0);
-  Point p3(1, 2);
-
-  // use P10--P11 for both, so distance should be zero
-  Segment e0(p0, p1);
-  Segment e1(p0, p1);
-
-  // compute distance
-  //  wasserstein2_edge_edge( Segment(p0,p1), Segment(p0,p1)
-  //  );
-  //  wasserstein2_edge_edge( Segment(p0,p1), Segment(p1,p0)
-  //  );
-
-  // perp edges at midpoint
-  // of uniform length
-  // appears that W2 is invariant to permutation of matching
-  // up integration points!
-  // W1 order matters, best is a large spread, match close
-  // points together and match far points together
-  // W1 best is interlaced, alternating points from each
-  // side, *not* 0-5 matched with 0-5
-  if(0) {
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(1, 1), Point(1, 3)));  // 2.22  W2
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(1, 0), Point(1, 2)));  // 1.39
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(1, -0.3), Point(1, 1.7)));  // 1.19
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(1, -0.5), Point(1, 1.5)));  // 1.09
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(1, -1), Point(1, 1)));  // 0.966
-  }
-
-  // perp edges, not at midpoint
-  // appears that W2 is invariant to permutation of matching
-  // up integration points!
-  // W1 is as in the above case
-  if(0) {
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0, 1), Point(0, 3)));  // 2.43 W2
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0, 0), Point(0, 2)));  // 1.71
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0, -0.3), Point(0, 1.7)));  // 1.55
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0, -0.5), Point(0, 1.5)));  // 1.47
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0, -1), Point(0, 1)));  // 1.39
-  }
-
-  // skew
-  if(1) {
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(-1, 1), Point(1, 1)));
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(-1, 1), Point(1, 2)));
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(-1, 1), Point(1, 3)));
-
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0.2, 1), Point(1.8, 1)));
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0.2, 1), Point(1.8, 2)));
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0.2, 1), Point(1.8, 3)));
-
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0.2, -0.3), Point(1.8, 0.3)));
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0.2, -0.3), Point(1.8, 0.9)));
-    wasserstein2_edge_edge(
-        Segment(p0, p1),
-        Segment(Point(0.2, -0.3), Point(1.8, 1.5)));
-  }
-}
+#include <random>
 
 void test_tri_w2() {
   Triangle tri(Point(2, 1), Point(3, 1), Point(2, 2));
@@ -138,12 +40,6 @@ void generate_rand_dt(int num_points, DT &dt) {
 }
 
 int main(int argc, char **argv) {
-  // Test Wasserstein distance between two segments
-  if(0) {
-    wasserstein_edge_edge_test();
-    test_tri_w2();
-    return 0;
-  }
 
   // Test hot energy between triangle and triangle* == point
 
