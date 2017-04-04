@@ -140,7 +140,7 @@ class triangle_w_helper<T, 2> {
       auto right =
           x_int.slice(0, verts[(w_idx + 1) % tri_verts][0])
               .coeff(0);
-      integral += left + -right;
+      integral += std::abs(left + -right);
     }
     return integral;
   }

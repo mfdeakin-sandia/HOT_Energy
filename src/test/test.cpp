@@ -50,9 +50,9 @@ TEST_CASE("Unit Right Triangle", "[HOT]") {
       num_shifts * num_permutations;
   // TODO: Reduce the large relative error of the
   // Wasserstein calculation
-  // 15 bits of double precision's 53 is too much!
+  // 19 bits of double precision's 53 is too much!
   constexpr const double max_rel_error =
-      std::numeric_limits<double>::epsilon() * 32768.0;
+      std::numeric_limits<double>::epsilon() * 524288.0;
 
   std::random_device rd;
   RNG engine(rd());
@@ -98,8 +98,7 @@ TEST_CASE("Unit Right Triangle", "[HOT]") {
     for(int i = 0; i < num_tris; i++) {
       K_real energy = triangle_w<2>(tri[i]);
 
-      REQUIRE(std::abs(energy * 18 - 1) <
-              max_rel_error);
+      REQUIRE(std::abs(energy * 18 - 1) < max_rel_error);
     }
   }
 }
@@ -112,9 +111,9 @@ TEST_CASE("Unit Equilateral Triangle", "[HOT]") {
       num_shifts * num_permutations;
   // TODO: Reduce the large relative error of the
   // Wasserstein calculation
-  // 15 bits of double precision's 53 is too much!
+  // 21 bits of double precision's 53 is too much!
   constexpr const double max_rel_error =
-      std::numeric_limits<double>::epsilon() * 32768.0;
+      std::numeric_limits<double>::epsilon() * 2097152.0;
 
   std::random_device rd;
   RNG engine(rd());
@@ -159,9 +158,8 @@ TEST_CASE("Unit Equilateral Triangle", "[HOT]") {
   SECTION("Wasserstein 2") {
     for(int i = 0; i < num_tris; i++) {
       K_real energy = triangle_w<2>(tri[i]);
-
-      REQUIRE(std::abs(energy * 18 - 1) <
-              18 * max_rel_error);
+      REQUIRE(std::abs(energy - 0.036084391824351578232) <
+              0.036084391824351578232 * max_rel_error);
     }
   }
 }
