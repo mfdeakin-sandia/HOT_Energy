@@ -49,10 +49,7 @@ boost::variant<std::array<Triangle, 2>,
 integral_bounds(const Triangle &face);
 
 /* Computes the centroid of the triangle */
-Point triangle_centroid(const Triangle &face) {
-  return CGAL::centroid(face.vertex(0), face.vertex(1),
-                        face.vertex(2));
-}
+Point triangle_centroid(const Triangle &face);
 
 template <typename T, int k>
 class triangle_w_helper;
