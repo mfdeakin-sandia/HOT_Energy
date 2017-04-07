@@ -1,5 +1,7 @@
 
 #include <hot.hpp>
+#include <ply_writer.hpp>
+
 #include <random>
 
 void test_tri_w2() {
@@ -44,7 +46,7 @@ int main(int argc, char **argv) {
   // Test hot energy between triangle and triangle* == point
 
   DT dt;
-  const int num_points = 30;
+  const int num_points = 10;
   generate_rand_dt(num_points, dt);
   std::cout << "Generated the Delaunay Triangulation of "
             << num_points << " points" << std::endl;
@@ -64,5 +66,6 @@ int main(int argc, char **argv) {
   }
   K_real energy = hot_energy<2>(dt);
   std::cout << "Mesh energy: " << energy << std::endl;
+  write_ply("test.ply", dt);
   return 0;
 }
