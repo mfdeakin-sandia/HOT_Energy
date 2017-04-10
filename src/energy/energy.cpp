@@ -67,5 +67,6 @@ int main(int argc, char **argv) {
   K_real energy = hot_energy<2>(dt);
   std::cout << "Mesh energy: " << energy << std::endl;
   write_ply("test.ply", dt);
+  hot_optimize<2>(dt);
   return 0;
 }
