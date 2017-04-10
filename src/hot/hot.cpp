@@ -7,6 +7,8 @@
 
 #include <boost/variant/variant.hpp>
 
+#include <list>
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -90,4 +92,25 @@ Triangle face_to_tri(const Face &face) {
 Point triangle_centroid(const Triangle &face) {
   return CGAL::centroid(face.vertex(0), face.vertex(1),
                         face.vertex(2));
+}
+
+std::list<Point> internal_vertices(const DT &dt) {
+  std::list<Point> verts;
+  std::set<Point> seen;
+  // First mark the external vertices as having been seen
+  for(auto vert_itr =
+          dt.incident_vertices(dt.infinite_vertex());
+      seen.count(vert_itr->point()) == 0; vert_itr++) {
+    seen.insert(vert_itr->point());
+  }
+  // Now iterator over all of the vertices,
+	// storing them if we haven't seen them before
+  for(auto point_itr = dt.points_begin();
+      point_itr != dt.points_end(); point_itr++) {
+    if(seen.count(*point_itr) == 0) {
+			seen.insert(*point_itr);
+      verts.push_back(*point_itr);
+    }
+  }
+  return verts;
 }

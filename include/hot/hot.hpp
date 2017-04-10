@@ -9,6 +9,7 @@
 
 #include <boost/variant/variant.hpp>
 
+#include <list>
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -40,6 +41,8 @@ Triangle face_to_tri(const Face &face);
 
 double wasserstein2_edge_edge(const Segment &e0,
                               const Segment &e1);
+
+std::list<Point> internal_vertices(const DT &dt);
 
 /* Computes 1 or 2 triangles which can be used for the
  * piecewise integral of the Wasserstein distance with
@@ -123,10 +126,6 @@ class triangle_w_helper<T, 2> {
       auto y_int = initial.integrate(1);
       Numerical::Polynomial<K_real, 3, 1> upper =
           y_int.var_sub(1, bound_1);
-      // 3.55556 y + -1.33333 y ^ 2 + 0.333333 y ^ 3 +
-      // -2.66667 x y + x ^ 2 y
-      // y = y_1 = -x + 3
-      // -1.33333 + -3.55556 x + 4.33333 x ^ 2 + -1 x ^ 3
       Numerical::Polynomial<double, 3, 1> lower =
           y_int.var_sub(1, bound_2);
       auto y_bounded = upper + -lower;
@@ -184,6 +183,23 @@ K_real hot_energy(const DT &dt) {
     energy += wasserstein * area;
   }
   return energy;
+}
+
+template <int k>
+DT hot_optimize(DT dt) {
+  K_real delta_energy = 1.0 / 0.0;
+  constexpr const K_real min_delta_energy = 0.1;
+	std::list<Point> internal_verts = internal_vertices(dt);
+	std::vector<K_real> weights(internal_verts.size() * 2);
+  while(delta_energy > min_delta_energy) {
+    delta_energy = 0.0;
+		// Shift each point by dx and dy separately,
+		// measuring how much the energy changes to compute the gradient
+    for(Point pt : internal_verts) {
+			
+    }
+  }
+  return dt;
 }
 
 #endif  // _HOT_HPP_
