@@ -12,7 +12,7 @@ include_directories(include/hot include/polynomial include/Wasserstein)
 # ??there should be some way to separate out hot and Wasserstein so they don't appear in each others' lists
 file(GLOB_RECURSE INCS "*.h")
 file(GLOB_RECURSE INCS "*.hpp")
-add_library(hot src/hot/hot.cpp ${INCS})
+add_library(hot src/hot/hot.cpp src/hot/ply_writer.cpp ${INCS})
 add_library(wasserstein src/wasserstein/WassersteinEdgeEdgeTest.cpp ${INCS})
 
 add_executable(energy src/energy/energy.cpp)

@@ -50,7 +50,6 @@ void aggregate_simplices(const DT &mesh, std::list<Point> &points,
       auto key_itr = point_indices.find(p);
       if (key_itr != point_indices.end()) {
         face_verts[i] = key_itr->second;
-        std::cout << p << " already seen; equivalent to " << key_itr->first << " which has index " << key_itr->second << "; face " << faces.size() << " references it" << std::endl;
       } else {
         int point_idx = points.size();
         points.push_back(p);
@@ -88,7 +87,7 @@ void write_ply(const char *fname, const DT &mesh) {
 
   // Output the vertices
   for(const Point &p : points) {
-    output << p << std::endl;
+    output << p << ' ' << 0 << std::endl;
   }
   for (const std::array<int, tri_verts> &f : faces) {
     output << tri_verts;
