@@ -141,7 +141,7 @@ double WassersteinEdgeEdgeTest::w2_perp(const Segment &e0, const Segment &e1)
   //  const double dst = CGAL::to_double( ds * dt );
   //  std::cout << "ds2:" << ds2 << " dt2:" << dt2 << " dst:" << dst << std::endl;
   
-  const double W2_analytic = c * sqrt( CGAL::to_double( ds * ds + dt * dt + ds * dt ) );
+  const double W2_analytic = c * sqrt( CGAL::to_double( ds * ds + dt * dt - ds * dt ) );
   std::cout << "W2_analytic : " << W2_analytic << std::endl;
   
   // compare vs. matching the endpoints the other way
@@ -150,7 +150,7 @@ double WassersteinEdgeEdgeTest::w2_perp(const Segment &e0, const Segment &e1)
   {
     auto dsR = e0.source() - e1.target();
     auto dtR = e0.target() - e1.source();
-    const double W2_analyticR = c * sqrt( CGAL::to_double( dsR * dsR + dtR * dtR + dsR * dtR ) );
+    const double W2_analyticR = c * sqrt( CGAL::to_double( dsR * dsR + dtR * dtR - dsR * dtR ) );
     std::cout << "W2_anal_Rev : " << W2_analyticR << std::endl;
   }
   
@@ -165,7 +165,7 @@ double WassersteinEdgeEdgeTest::w2_perp(const Segment &e0, const Segment &e1)
       ddtt  += dt.cartesian(i) * dt.cartesian(i);
       ddst  += ds.cartesian(i) * dt.cartesian(i);
     }
-    const double W2_analytic_manual = c * sqrt( CGAL::to_double( ddss + ddtt + ddst ) );
+    const double W2_analytic_manual = c * sqrt( CGAL::to_double( ddss + ddtt - ddst ) );
     std::cout << "W2_manual   : " << W2_analytic_manual << std::endl;
   }
 
@@ -388,7 +388,7 @@ void WassersteinEdgeEdgeTest::test()
   Segment so_long( Point(0,0), Point (2.5,0) );
   vector< pair<Segment,Segment> > e_perp_offset_long = e_perp_offset;
   for ( int i = 0; i < e_perp_offset_long.size(); ++i )
-    e_perp_offset_long[i].first = so_long;
+    e_perp_offset_long[i].first = so_long;    // ???
   
   vector< pair<Segment,Segment> > e_oblique =
   {
@@ -406,7 +406,7 @@ void WassersteinEdgeEdgeTest::test()
     { s02, Segment( Point(1.5,-0.3), Point(0.2,1.8) ) }
   };
 
-  //test sets:
+  //test sets: (vectors of pairs of segments)
   //  e_perp
   //  e_perp2
   //  e_perp_long
