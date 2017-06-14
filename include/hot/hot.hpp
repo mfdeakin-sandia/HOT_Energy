@@ -41,6 +41,7 @@ constexpr const int tri_edges = 3;
 void order_points(std::array<Point, tri_verts> &verts);
 Triangle face_to_tri(const Face &face);
 double signed_dist_circumcenters(const Triangle &tri, int vertex_index);
+int sign(double number);
 
 double wasserstein2_edge_edge(const Segment &e0,
                               const Segment &e1);
@@ -199,7 +200,9 @@ double signed_dist_circumcenters(const Triangle &tri, int vertex_index){
 	Point point0=tri.vertex(vertex_index);
 	Point point1_opp=tri.vertex(vertex_index+1);
 	Point point2_opp=tri.vertex(vertex_index+2);
-	
+	//std::cout << "point0: " << point0.x() << " " << point0.y() <<std::endl;
+	//std::cout << "point1: " << point1_opp.x() << " " << point1_opp.y() <<std::endl;
+	//std::cout << "point2: " << point2_opp.x() << " " << point2_opp.y() <<std::endl;
 	double cot=((point1_opp -point0)*(point2_opp-point0))/sqrt(squared_distance(point1_opp, point0)*squared_distance(point2_opp, point0)-pow((point1_opp -point0)*(point2_opp-point0),2));
 	
 	//std::cout<< "cot: " << cot << std::endl;
@@ -229,6 +232,8 @@ template<>
 double subtri_energy<2,1>(const Point &xi, const Point &xj, double hk){
 	double dij= 0.5*sqrt(pow(xi.x()-xj.x(),2.0)+pow(xi.y()-xj.y(),2.0)); // computes distance from xi to midpoint
 	return (2.0/3)*(pow(dij,3)*hk+dij*pow(hk,3));
+	//int sign=sign(hk+hl);
+	//return 2.0/3*(sign*(hk+hl)*pow(dij, 3)+sign*dij*(pow(hk,3)+pow(hl, 3)));
 }
 
 template<>
@@ -260,10 +265,33 @@ double hot_energy_density(const DT &dt){
     energy += tri_energy<Wk,star>(tri);
     mesh_volume+=tri.area();
   }
+//	All_edge_iterator edge_itr(t); 
+	
+//	for(auto edge_itr=dt.All_edges_iterator(); edge_itr!=
+//	Segment seg=edge_to_seg(*edge_itr);
+
 	
   //K_real energy_density=energy/mesh_volume;	
   //return energy_density;
   return energy;
+}
+
+
+//template<int Wk, int star>
+//double edge_energy(Segment seg, Point xk, Point xl);
+
+//template<>
+//double edge_energy(Segment seg, Point xk, Point xl)<2,1>{
+//	double hk= sign_dist_circumcenters2(seg, xk);
+//	double hl=sign_dist_circumcenters2(seg, xl);
+	
+//	double energy=0
+//	return energy; 
+//}
+
+int sign(double number){
+	if(number > 0) return 1;
+		else return -1;
 }
 
 #endif  // _HOT_HPP_
