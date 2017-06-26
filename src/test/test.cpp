@@ -163,3 +163,33 @@ TEST_CASE("Unit Equilateral Triangle", "[HOT]") {
     }
   }
 }
+
+TEST_CASE("Mesh Gradient Descent", "[HOT]") {
+  using K = CGAL::Cartesian<double>;
+  using K_real = K::RT;
+  using DT = CGAL::Delaunay_triangulation_2<K>;
+
+  constexpr const int num_bounds = 4;
+  constexpr const double x_bounds[] = {-2.55, -0.480, 0.480, 2.55};
+  constexpr const double y_bounds[] = {-0.887, 1.82, 1.82, -0.887};
+  constexpr const double initial_internal_x = 0.0;
+  constexpr const double initial_internal_y = 0.0;
+  
+  DT dt;
+  for(int i = 0; i < num_bounds;i++) {
+    DT::Point pt(x_bounds[i], y_bounds[i]);
+    dt.insert(pt);
+  }
+
+  dt.insert(DT::Point(initial_internal_x, initial_internal_y));
+
+  SECTION("Internal Vertices") {
+    // Verify there's only 1 internal vertex
+    std::list<DT::Vertex_handle> internal_verts = internal_vertices(dt);
+    REQUIRE(internal_verts.size() == 1);
+    // Vertify that the vertex is the one we expect
+    DT::Vertex_handle vertex = internal_verts.front();
+    REQUIRE(vertex->point()[0] == 0.0);
+    REQUIRE(vertex->point()[1] == 0.0);
+  }
+}
