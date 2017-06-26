@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <limits>
 
 #include <polynomial.hpp>
 
@@ -49,14 +50,14 @@ std::list<DT::Vertex_handle> internal_vertices(const DT &dt);
 boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1> >
 integral_bounds(const Triangle &face);
 
-/* Computes the centroid of the triangle */
-Point triangle_centroid(const Triangle &face);
+/* Computes the circumcenter of the triangle */
+Point triangle_circumcenter(const Triangle &face);
 
 template <typename T, int k> class triangle_w_helper;
 
 template <typename T> class triangle_w_helper<T, 2> {
 public:
-  K_real operator()(T &bounds, const Point &centroid) {
+  K_real operator()(T &bounds, const Point &circumcenter) {
     K_real integral = 0;
     for (auto area : bounds) {
       /* Start by computing the lines used for boundaries
@@ -101,11 +102,11 @@ public:
 
       Numerical::Polynomial<K_real, 1, 2> initial_x_root((Tags::Zero_Tag()));
       initial_x_root.coeff(1, 0) = 1;
-      initial_x_root.coeff(0, 0) = -centroid[0];
+      initial_x_root.coeff(0, 0) = -circumcenter[0];
 
       Numerical::Polynomial<K_real, 1, 2> initial_y_root((Tags::Zero_Tag()));
       initial_y_root.coeff(0, 1) = 1;
-      initial_y_root.coeff(0, 0) = -centroid[1];
+      initial_y_root.coeff(0, 0) = -circumcenter[1];
 
       Numerical::Polynomial<K_real, 2, 2> initial =
           initial_x_root * initial_x_root + initial_y_root * initial_y_root;
@@ -126,11 +127,11 @@ public:
 };
 
 /* Computes the k Wasserstein distance of the triangular
- * face to it's centroid */
+ * face to it's circumcenter */
 template <int k> K_real triangle_w(const Triangle &face);
 
 template <> K_real triangle_w<2>(const Triangle &tri) {
-  Point centroid = triangle_centroid(tri);
+  Point circumcenter = triangle_circumcenter(tri);
   boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1> > bounds =
       integral_bounds(tri);
   // Set to NaN until implemented
@@ -138,11 +139,11 @@ template <> K_real triangle_w<2>(const Triangle &tri) {
   if (bounds.which() == 0) {
     // std::array<Triangle, 2>
     auto area = boost::get<std::array<Triangle, 2> >(bounds);
-    return triangle_w_helper<std::array<Triangle, 2>, 2>()(area, centroid);
+    return triangle_w_helper<std::array<Triangle, 2>, 2>()(area, circumcenter);
   } else {
     // std::array<Triangle, 1>
     auto area = boost::get<std::array<Triangle, 1> >(bounds);
-    return triangle_w_helper<std::array<Triangle, 1>, 2>()(area, centroid);
+    return triangle_w_helper<std::array<Triangle, 1>, 2>()(area, circumcenter);
   }
 }
 
@@ -176,11 +177,10 @@ K_real compute_incident_energies(const DT &dt, DT::Vertex_handle vtx) {
   return energy;
 }
 
-template <int k> DT hot_optimize(DT dt) {
-  constexpr const K_real min_delta_energy = 0.1;
+template <int k> DT hot_optimize(DT dt, K_real min_delta_energy = 0.1) {
   constexpr const K_real dx = 0.0000001;
   constexpr const K_real dy = 0.0000001;
-  K_real delta_energy = 1.0 / 0.0;
+  K_real delta_energy = std::numeric_limits<K_real>::infinity();
   std::list<DT::Vertex_handle> internal_verts = internal_vertices(dt);
   struct finite_diffs {
     DT::Vertex_handle vtx;
@@ -192,7 +192,7 @@ template <int k> DT hot_optimize(DT dt) {
   };
   std::vector<finite_diffs> weights(internal_verts.size());
   // This mesh is modified to determine the gradient each step
-  while (delta_energy > min_delta_energy) {
+  while (delta_energy >= min_delta_energy) {
     delta_energy = 0.0;
     // Shift each point by dx and dy separately,
     // measuring how much the energy changes to approximate the gradient

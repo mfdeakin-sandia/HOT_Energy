@@ -84,8 +84,8 @@ Triangle face_to_tri(const Face &face) {
                   face.vertex(2)->point());
 }
 
-Point triangle_centroid(const Triangle &face) {
-  return CGAL::centroid(face.vertex(0), face.vertex(1), face.vertex(2));
+Point triangle_circumcenter(const Triangle &face) {
+  return CGAL::circumcenter(face.vertex(0), face.vertex(1), face.vertex(2));
 }
 
 std::list<DT::Vertex_handle> internal_vertices(const DT &dt) {
