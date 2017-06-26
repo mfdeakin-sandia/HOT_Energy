@@ -4,8 +4,8 @@
 
 #include <OptimizedMesh.hpp>
 
-#include <CGAL/Delaunay_Triangulation_2.h>
 #include <CGAL/Cartesian.h>
+#include <CGAL/Delaunay_Triangulation_2.h>
 #include <CGAL/Root_of_traits.h>
 #include <CGAL/number_utils.h>
 
@@ -38,33 +38,32 @@ private:
   }
 
   virtual real triangle_energy(const Triangle &tri) {
-    Point centroid = triangle_centroid(tri);
-    boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1> > bounds =
+    Point circumcenter = triangle_circumcenter(tri);
+    boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1>> bounds =
         integral_bounds(tri);
     real energy = 0.0;
     if (bounds.which() == 0) {
       // std::array<Triangle, 2>
-      auto area = boost::get<std::array<Triangle, 2> >(bounds);
+      auto area = boost::get<std::array<Triangle, 2>>(bounds);
       for (Triangle tri : area) {
-        energy += triangle_wasserstein_2(tri, centroid);
+        energy += triangle_wasserstein_2(tri, circumcenter);
       }
     } else {
       // std::array<Triangle, 1>
-      auto area = boost::get<std::array<Triangle, 1> >(bounds);
+      auto area = boost::get<std::array<Triangle, 1>>(bounds);
       for (Triangle tri : area) {
-        energy += triangle_wasserstein_2(tri, centroid);
+        energy += triangle_wasserstein_2(tri, circumcenter);
       }
     }
     return energy;
   }
 
-  real triangle_wasserstein_2(const Triangle &area, const Point &centroid)
-  {
+  real triangle_wasserstein_2(const Triangle &area, const Point &circumcenter) {
     /* Start by computing the lines used for boundaries
      * and the width.
      */
-    std::array<Point, tri_verts> verts = { area.vertex(0), area.vertex(1),
-                                           area.vertex(2) };
+    std::array<Point, tri_verts> verts = {area.vertex(0), area.vertex(1),
+                                          area.vertex(2)};
     order_points(verts);
 
     /* Find the index of the non-vertical point
@@ -99,11 +98,11 @@ private:
 
     Numerical::Polynomial<K_real, 1, 2> initial_x_root((Tags::Zero_Tag()));
     initial_x_root.coeff(1, 0) = 1;
-    initial_x_root.coeff(0, 0) = -centroid[0];
+    initial_x_root.coeff(0, 0) = -circumcenter[0];
 
     Numerical::Polynomial<K_real, 1, 2> initial_y_root((Tags::Zero_Tag()));
     initial_y_root.coeff(0, 1) = 1;
-    initial_y_root.coeff(0, 0) = -centroid[1];
+    initial_y_root.coeff(0, 0) = -circumcenter[1];
 
     Numerical::Polynomial<K_real, 2, 2> initial =
         initial_x_root * initial_x_root + initial_y_root * initial_y_root;
@@ -120,6 +119,8 @@ private:
     real integral = std::abs(left + -right);
     return integral;
   }
+
+  std::array<real, space_dim> vertex_energy_grad() {}
 };
 
 #endif
