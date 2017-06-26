@@ -9,11 +9,12 @@
 
 #include <boost/variant/variant.hpp>
 
-#include <list>
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <limits>
+#include <list>
+#include <vector>
 
 #include <polynomial.hpp>
 
@@ -37,6 +38,15 @@ using Direction = CGAL::Direction_2<K>;
 constexpr const int tri_verts = 3;
 constexpr const int tri_edges = 3;
 
+struct finite_diffs {
+  DT::Vertex_handle vtx;
+  K_real center;
+  K_real dx_plus;
+  K_real dx_minus;
+  K_real dy_plus;
+  K_real dy_minus;
+};
+
 void order_points(std::array<Point, tri_verts> &verts);
 Triangle face_to_tri(const Face &face);
 
@@ -47,7 +57,7 @@ std::list<DT::Vertex_handle> internal_vertices(const DT &dt);
 /* Computes 1 or 2 triangles which can be used for the
  * piecewise integral of the Wasserstein distance with
  * k */
-boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1> >
+boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1>>
 integral_bounds(const Triangle &face);
 
 /* Computes the circumcenter of the triangle */
@@ -63,8 +73,8 @@ public:
       /* Start by computing the lines used for boundaries
        * and the width.
        */
-      std::array<Point, tri_verts> verts = { area.vertex(0), area.vertex(1),
-                                             area.vertex(2) };
+      std::array<Point, tri_verts> verts = {area.vertex(0), area.vertex(1),
+                                            area.vertex(2)};
       order_points(verts);
 
       /* Find the index of the non-vertical point
@@ -132,17 +142,17 @@ template <int k> K_real triangle_w(const Triangle &face);
 
 template <> K_real triangle_w<2>(const Triangle &tri) {
   Point circumcenter = triangle_circumcenter(tri);
-  boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1> > bounds =
+  boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1>> bounds =
       integral_bounds(tri);
   // Set to NaN until implemented
   K_real distance = 0.0 / 0.0;
   if (bounds.which() == 0) {
     // std::array<Triangle, 2>
-    auto area = boost::get<std::array<Triangle, 2> >(bounds);
+    auto area = boost::get<std::array<Triangle, 2>>(bounds);
     return triangle_w_helper<std::array<Triangle, 2>, 2>()(area, circumcenter);
   } else {
     // std::array<Triangle, 1>
-    auto area = boost::get<std::array<Triangle, 1> >(bounds);
+    auto area = boost::get<std::array<Triangle, 1>>(bounds);
     return triangle_w_helper<std::array<Triangle, 1>, 2>()(area, circumcenter);
   }
 }
@@ -177,53 +187,62 @@ K_real compute_incident_energies(const DT &dt, DT::Vertex_handle vtx) {
   return energy;
 }
 
-template <int k> DT hot_optimize(DT dt, K_real min_delta_energy = 0.1) {
+K_real choose_distance_scale(DT &dt, std::vector<finite_diffs> diffs) {
+  // TODO: Implement something real here
+  return 1.0;
+}
+
+template <int k>
+std::vector<finite_diffs>
+compute_gradient(DT &dt, std::list<DT::Vertex_handle> &internal_verts) {
   constexpr const K_real dx = 0.0000001;
   constexpr const K_real dy = 0.0000001;
+  std::vector<finite_diffs> f_diffs(internal_verts.size());
+  int idx = 0;
+  for (DT::Vertex_handle vtx : internal_verts) {
+    DT::Point initial_point = vtx->point();
+    finite_diffs &grad = f_diffs[idx];
+    grad.vtx = vtx;
+
+    grad.center = compute_incident_energies<k>(dt, vtx);
+    dt.move(vtx, Point(initial_point[0] + dx, initial_point[1]));
+
+    grad.dx_plus = compute_incident_energies<k>(dt, vtx);
+    dt.move(vtx, Point(initial_point[0] - dx, initial_point[1]));
+    grad.dx_minus = compute_incident_energies<k>(dt, vtx);
+    dt.move(vtx, Point(initial_point[0], initial_point[1] + dy));
+
+    grad.dy_plus = compute_incident_energies<k>(dt, vtx);
+    dt.move(vtx, Point(initial_point[0], initial_point[1] - dy));
+    grad.dy_minus = compute_incident_energies<k>(dt, vtx);
+
+    dt.move(vtx, initial_point);
+    idx++;
+  }
+  return f_diffs;
+}
+
+template <int k> DT hot_optimize(DT dt, K_real min_delta_energy = 0.1) {
   K_real delta_energy = std::numeric_limits<K_real>::infinity();
   std::list<DT::Vertex_handle> internal_verts = internal_vertices(dt);
-  struct finite_diffs {
-    DT::Vertex_handle vtx;
-    K_real center;
-    K_real dx_plus;
-    K_real dx_minus;
-    K_real dy_plus;
-    K_real dy_minus;
-  };
-  std::vector<finite_diffs> weights(internal_verts.size());
   // This mesh is modified to determine the gradient each step
   while (delta_energy >= min_delta_energy) {
     delta_energy = 0.0;
     // Shift each point by dx and dy separately,
     // measuring how much the energy changes to approximate the gradient
-    int vtx_idx = 0;
-    for (DT::Vertex_handle vtx : internal_verts) {
-      const Point initial_point = vtx->point();
-      finite_diffs grad;
-      grad.vtx = vtx;
-      grad.center = compute_incident_energies<k>(dt, vtx);
-      dt.move(vtx, Point(initial_point[0] + dx, initial_point[1]));
-      grad.dx_plus = compute_incident_energies<k>(dt, vtx);
-      dt.move(vtx, Point(initial_point[0] - dx, initial_point[1]));
-      grad.dx_minus = compute_incident_energies<k>(dt, vtx);
-      dt.move(vtx, Point(initial_point[0], initial_point[1] + dy));
-      grad.dy_plus = compute_incident_energies<k>(dt, vtx);
-      dt.move(vtx, Point(initial_point[0], initial_point[1] - dy));
-      grad.dy_minus = compute_incident_energies<k>(dt, vtx);
-      weights[vtx_idx] = grad;
+    std::vector<finite_diffs> f_diffs = compute_gradient<k>(dt, internal_verts);
+    K_real dist_scale = choose_distance_scale(dt, f_diffs);
+    for (finite_diffs diff : f_diffs) {
+      K_real dx = dist_scale * (diff.dx_plus - diff.dx_minus) / 2.0;
+      K_real dy = dist_scale * (diff.dy_plus - diff.dy_minus) / 2.0;
+      dt.move(diff.vtx,
+              Point(diff.vtx->point()[0] + dx, diff.vtx->point()[1] + dy));
 
-      vtx_idx++;
-      dt.move(vtx, initial_point);
-    }
-    std::cout
-        << "Computed gradient:\nCenter     -dx        +dx        -dy        +dy"
-        << std::endl;
-    for (finite_diffs diff : weights) {
-      std::cout << std::setprecision(4) << std::setw(10) << std::left
-                << diff.center << ' ' << std::setw(10) << std::left
-                << diff.dx_minus << ' ' << std::setw(10) << std::left
-                << diff.dx_plus << ' ' << std::setw(10) << std::left
-                << diff.dy_minus << ' ' << std::setw(10) << std::left
+      std::cout << std::setprecision(8) << std::setw(14) << std::left
+                << diff.center << ' ' << std::setw(14) << std::left
+                << diff.dx_minus << ' ' << std::setw(14) << std::left
+                << diff.dx_plus << ' ' << std::setw(14) << std::left
+                << diff.dy_minus << ' ' << std::setw(14) << std::left
                 << diff.dy_plus << std::endl;
     }
   }
