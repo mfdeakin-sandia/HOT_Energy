@@ -95,10 +95,10 @@ TEST_CASE("Unit Right Triangle", "[HOT]") {
     }
   }
   SECTION("Wasserstein 2") {
+    // The correct answer is (5 / 60)
     for(int i = 0; i < num_tris; i++) {
       K_real energy = triangle_w<2>(tri[i]);
-
-      REQUIRE(std::abs(energy * 18 - 1) < max_rel_error);
+      REQUIRE(std::abs(energy * 12 - 1) < max_rel_error);
     }
   }
 }
