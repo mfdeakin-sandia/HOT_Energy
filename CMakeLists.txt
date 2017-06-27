@@ -18,6 +18,15 @@ add_library(wasserstein src/wasserstein/WassersteinEdgeEdgeTest.cpp ${INCS})
 add_executable(energy src/energy/energy.cpp)
 add_executable(tester src/test/test.cpp)
 add_executable(wassertest src/wasserstein/wasserstein.cpp)
+
+#
+add_executable(exp1_constrained_isoscles src/experiments/exp1_constrained_isoscles.cpp) 
+add_executable(exp2_vertex_to_fixed_edge src/experiments/exp2_vertex_to_fixed_edge.cpp)
+add_executable(exp3_collapse_no_large_angles src/experiments/exp3_collapse_no_large_angles.cpp)
+add_executable(exp4_hex_patch src/experiments/exp4_hex_patch.cpp)
+add_executable(lloydsCVT src/energy/lloydsCVT.cpp)
+#
+
 #add_executable(WassersteinEdgeEdgeTest src/wasserstein/WassersteinEdgeEdgeTest.cpp)
 
 # get xcode project to show include files
@@ -35,6 +44,31 @@ set_property(TARGET tester PROPERTY CXX_STANDARD 11)
 set_property(TARGET tester PROPERTY CXX_STANDARD_REQUIRED ON)
 target_link_libraries(tester hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
 
+#
+set_property(TARGET exp1_constrained_isoscles PROPERTY CXX_STANDARD 11)
+set_property(TARGET exp1_constrained_isoscles PROPERTY CXX_STANDARD_REQUIRED ON)
+target_link_libraries(exp1_constrained_isoscles hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+
+set_property(TARGET exp2_vertex_to_fixed_edge PROPERTY CXX_STANDARD 11)
+set_property(TARGET exp2_vertex_to_fixed_edge PROPERTY CXX_STANDARD_REQUIRED ON)
+target_link_libraries(exp2_vertex_to_fixed_edge hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+
+set_property(TARGET exp3_collapse_no_large_angles PROPERTY CXX_STANDARD 11)
+set_property(TARGET exp3_collapse_no_large_angles PROPERTY CXX_STANDARD_REQUIRED ON)
+target_link_libraries(exp3_collapse_no_large_angles hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+
+set_property(TARGET exp4_hex_patch PROPERTY CXX_STANDARD 11)
+set_property(TARGET exp4_hex_patch PROPERTY CXX_STANDARD_REQUIRED ON)
+target_link_libraries(exp4_hex_patch hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+
+set_property(TARGET lloydsCVT PROPERTY CXX_STANDARD 11)
+set_property(TARGET lloydsCVT PROPERTY CXX_STANDARD_REQUIRED ON)
+target_link_libraries(lloydsCVT hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+#
+
+
+
+
 target_compile_options(wasserstein PUBLIC "-g")
 set_property(TARGET wasserstein PROPERTY CXX_STANDARD 11)
 set_property(TARGET wasserstein PROPERTY CXX_STANDARD_REQUIRED ON)
@@ -43,6 +77,8 @@ target_compile_options(wassertest PUBLIC "-g")
 set_property(TARGET wassertest PROPERTY CXX_STANDARD 11)
 set_property(TARGET wassertest PROPERTY CXX_STANDARD_REQUIRED ON)
 target_link_libraries(wassertest wasserstein ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+
+
 
 #target_compile_options(WassersteinEdgeEdgeTest PUBLIC "-g")
 #set_property(TARGET WassersteinEdgeEdgeTest PROPERTY CXX_STANDARD 11)

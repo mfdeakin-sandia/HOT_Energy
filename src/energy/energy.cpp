@@ -4,6 +4,7 @@
 
 #include <random>
 #include <vector>
+#include <fstream>
 
 #include <CGAL/Kernel/global_functions.h>
 
@@ -50,24 +51,32 @@ void generate_rand_dt(int num_points, DT &dt) {
 int main(int argc, char **argv) {
 
   // Test hot energy between triangle and triangle* == point
+	
+ 	DT dt;
+	std::cout<< "star1-Hot_2,2 Mesh energy density for random DT: " << std::endl;
 
-  DT dt;
-std::cout<< "star0-Hot_2,2 Mesh energy density for random DT: " << std::endl;
-
-  const int num_points = 40;
-
+  	const int num_points = 10;
+	bool v_has_neigh=false; 
+	std::cout<< std::setw(15) << "Energy TM" <<std::setw(15) << "Energy EM" <<std::setw(15) << "Engery grad" << std::endl; 
 	for(int numiterations=0; numiterations<10; numiterations++){
   		generate_rand_dt(num_points, dt);
-		K_real energy=hot_energy_density<2,1>(dt);
-		std::cout << std::setw(5) << numiterations <<": " <<  energy << std::endl;
+		K_real energyT=energy_density_TMethod<2,1>(dt);
+		double energyE=energy_density_EMethod<2,1>(dt, true); 
+		Vertex_iterator vi=dt.finite_vertices_begin();
+		double energy_grad[2]={0,0}; 
+		energy_gradient(dt,2,1, vi, energy_grad,true);
+
+		std::cout << std::setw(15)<< energyT << std::setw(15) <<energyE << std::setw(15) << "(" << energy_grad[0] <<"," << energy_grad[1] <<")" << std::endl;
 	}
+
+	const int Wk=2; 
+	const int star=1; 
 
 
 // Make some non-DT triangles, compare to DT
 
 	// Set-up 1 
-	const int Wk=2;
-	const int star=1; 
+	
 	
 	std::vector<double> heights_NDT_less_DT;
 
@@ -97,7 +106,7 @@ std::cout<< "star0-Hot_2,2 Mesh energy density for random DT: " << std::endl;
 		std::cout<< std::setw(8) <<"height: "<< std::setw(10) << height <<std::endl;
 		std:: cout <<std::setw(8) << "DT: "<<  std::setw(10) << DTtri1_energy << std::setw(10) << DTtri2_energy << std::setw(10) << DT_energy << std::endl;
 		std:: cout << std::setw(8) << "NDT: " << std::setw(10) << NDTtri1_energy << std::setw(10) << NDTtri2_energy << std::setw(10) << NDT_energy << std::endl<<std::endl;
-		height-=.001;
+		height-=.1;
 		
 		if(NDT_energy <DT_energy)
 			heights_NDT_less_DT.push_back(height); 
@@ -152,48 +161,74 @@ std::cout<< "star0-Hot_2,2 Mesh energy density for random DT: " << std::endl;
 /////////////////////////////////////////////
 
 
-	std::cout<< std::endl <<"Experiment to see effect of using incorrect appendix formulas" << std::endl;
-
-	double degxi=7*PI/6, degxj=11*PI/6, degxl=3*PI/2; 
-
-	double xkheight=1;
-
-
 	
-	Triangle tri2_stationary( Point(cos(degxi), sin(degxi)), Point(cos(degxj), sin(degxj)), Point(cos(degxl), sin(degxl))); 
-	double hl=signed_dist_circumcenters(tri2_stationary, 2);
-	//std::cout<< "hl: "<< hl <<std::endl;
-	
-	double moving_subtri_energy=0, moving_tri_energy=0; 
-	std::cout<< std::setw(10) << "xkheight"<< std::setw(15) << "moving_subtri_energy" << std::setw(15) << "moving_tri_energy" << std::endl;
-	while(xkheight>-.5){
-	Point xk_moving(0, xkheight); 
-	Triangle tri1_moving(Point(cos(degxi), sin(degxi)), Point(cos(degxj), sin(degxj)), xk_moving); 
-	
-	double hk= signed_dist_circumcenters(tri1_moving, 2); 
-	//std::cout<<"hk: " << hk<<std::endl;
-
-	moving_subtri_energy+=subtri_energy<2,1>(Point(cos(degxi), sin(degxi)), Point(cos(degxj), sin(degxj)), hk);
-	moving_tri_energy=tri_energy<2,1>(tri1_moving);
-	//energy+=subtri_energy<2,1>(Point(cos(degxi), sin(degxi)), Point(cos(degxj), sin(degxj)), hl);
-	std::cout<< std::setw(10) << xkheight<< std::setw(15) << moving_subtri_energy << std::setw(15) << moving_tri_energy << std::endl;
-	xkheight-= .1;
-	moving_subtri_energy=0;
-	moving_tri_energy=0;
-
-	}
 	/////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
 	std::cout<<std::endl<< "hexagon with free vertex experiment: "<< std::endl;
 	
+	std::ofstream outputFile;
+	outputFile.open("total_hex_energy.txt");
 
 	// hexgon perimeter points
 	
 	std::vector<Point> points={Point(-1,0),  Point(cos(120*PI/180), sin(120*PI/180)),  Point(cos(60*PI/180), sin(60*PI/180)),  Point(1,0),  Point(cos(300*PI/180), sin(300*PI/180)),  Point(cos(240*PI/180), sin(240*PI/180))} ; 
 
+	double anglestep=1;
+	double angle=0;
+	//double dir[2];
+	double stepsize=0;
+	double max_energy=0;
+	double min_energy=2;
+
+	double max_angle;
+	double max_stepsize;
+	while(angle <2*PI){
+		std::cout<< std::setw(10) << "angle: " << std::setw(10) << angle <<std::endl;
+		double dir[2]={cos(angle),sin(angle)};
+		stepsize=0;
+		while(stepsize<.85){
+			Point freept(dir[0]/sqrt(dir[0]*dir[0]+dir[1]*dir[1])*stepsize, dir[1]/sqrt(dir[0]*dir[0]+dir[1]*dir[1])*stepsize);
+			std::vector<Triangle> triangle_array;
+
+			for(int i=0; i<6; i++){
+				triangle_array.push_back(Triangle(points[i], points[(i+1)%6], freept));
+			}
+
+		// print triangles vertices 
+		//std::vector<Triangle>::iterator iter=triangle_array.begin(); // pointer is a pointer to the beginning of the array
+		//while(iter!=triangle_array.end()){
+		//	std::cout<< *iter << std::endl;
+			//std::cout<< *iter.vertex(0) << std::setw(10) << *iter.vertex(1) << std::setw(10) << *iter.vertex(2) << std::endl;
+		//	iter ++;
+		//}
+	
+			double total_hex_energy=0;
+			for(int i=0; i<triangle_array.size(); i++){
+				total_hex_energy+=tri_energy<Wk,star>(triangle_array[i]);
+			}
+			std::cout<< std::setw(10) << std::setprecision(5) << stepsize <<std::setw(10)<< std::setprecision(5) << total_hex_energy << std::endl;
+			outputFile<< std::setw(15) <<std::setprecision(5)<<freept.x() << std::setw(15) <<std::setprecision(5)<< freept.y() << std::setw(15) << std::setprecision(5) << total_hex_energy <<std::endl; 
+			stepsize+=1; 
+			//std::cout<<"THis is the value of stepsize: "<< stepsize <<std::endl;
+			if(total_hex_energy >max_energy){
+				max_energy=total_hex_energy;
+				max_stepsize=stepsize;
+				max_angle=angle;
+			}
+			if(total_hex_energy<min_energy) min_energy=total_hex_energy;	
+		}
+		
+		angle+=anglestep;
+	}
+	outputFile.close();
+	std::cout<< "min: " << min_energy << " max: " << max_energy <<std::endl;
+	std::cout << "max angle: " << max_angle << " max stepsize: " << stepsize <<std::endl;
+	
+/*	
 	//free point
-	double dir[2]{1,1};
+	double dir[2]{cos(anglestep),sin(anglestep)};
+	
 	double stepsize=0;
 	std::cout<< std::setw(10) << "Step size " <<std::setw(10) << "hex energery " << std::endl; 
 	while(stepsize<1){
@@ -219,6 +254,7 @@ std::cout<< "star0-Hot_2,2 Mesh energy density for random DT: " << std::endl;
 		std::cout<< std::setw(10) << stepsize <<std::setw(10) << total_hex_energy << std::endl;
 		stepsize+=.1; 
 	} 
+*/
 
 	////Create triangles
 	//std::vector<Triangle> triangle_array={Triangle(points[0], points[1], freept)}; 
@@ -244,7 +280,7 @@ std::cout<< "star0-Hot_2,2 Mesh energy density for random DT: " << std::endl;
 	//}
 	//std::cout<< "This is the total hexagon energy: " << total_hex_energy << std::endl;
 
-	
+
   	write_ply("test.ply", dt);
   	return 0;
 }
