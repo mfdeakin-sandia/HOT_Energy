@@ -236,14 +236,7 @@ template <int k> DT hot_optimize(DT dt, K_real min_delta_energy = 0.1) {
       K_real dx = dist_scale * (diff.dx_plus - diff.dx_minus) / 2.0;
       K_real dy = dist_scale * (diff.dy_plus - diff.dy_minus) / 2.0;
       dt.move(diff.vtx,
-              Point(diff.vtx->point()[0] + dx, diff.vtx->point()[1] + dy));
-
-      std::cout << std::setprecision(8) << std::setw(14) << std::left
-                << diff.center << ' ' << std::setw(14) << std::left
-                << diff.dx_minus << ' ' << std::setw(14) << std::left
-                << diff.dx_plus << ' ' << std::setw(14) << std::left
-                << diff.dy_minus << ' ' << std::setw(14) << std::left
-                << diff.dy_plus << std::endl;
+              Point(diff.vtx->point()[0] - dx, diff.vtx->point()[1] - dy));
     }
   }
   return dt;

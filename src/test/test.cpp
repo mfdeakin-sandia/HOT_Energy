@@ -188,7 +188,125 @@ TEST_CASE("Single Point Mesh Gradient Descent Local Minimum", "[HOT]") {
     // Because we're at a local minimum, the figure is symmetric,
     // and we're moving the same in either direction,
     // dx_plus == dx_minus == dy_plus == dy_minus
-    REQUIRE(std::abs(f_diffs[0].dx_plus - f_diffs[0].dx_minus) <= max_rel_error);
-    REQUIRE(std::abs(f_diffs[0].dy_plus - f_diffs[0].dy_minus) <= max_rel_error);
+    REQUIRE(std::abs(f_diffs[0].dx_plus - f_diffs[0].dx_minus) <=
+            max_rel_error);
+    REQUIRE(std::abs(f_diffs[0].dy_plus - f_diffs[0].dy_minus) <=
+            max_rel_error);
+  }
+
+  SECTION("Vertex Gradient Descent") {
+    DT optimized = hot_optimize<2>(dt);
+    std::list<DT::Vertex_handle> optimized_verts = internal_vertices(optimized);
+    REQUIRE(optimized_verts.size() == 1);
+    DT::Vertex_handle vertex = optimized_verts.front();
+    REQUIRE(std::abs(vertex->point()[0] - initial_internal_x) <= max_rel_error);
+    REQUIRE(std::abs(vertex->point()[1] - initial_internal_y) <= max_rel_error);
+  }
+}
+
+TEST_CASE("Single Point Mesh Gradient Descent", "[HOT]") {
+  using K = CGAL::Cartesian<double>;
+  using K_real = K::RT;
+  using DT = CGAL::Delaunay_triangulation_2<K>;
+
+  constexpr const double max_rel_error =
+      std::numeric_limits<double>::epsilon() * 32.0;
+
+  constexpr const int num_bounds = 3;
+  const double x_bounds[] = {-1.0, -1.0, 1.0};
+  const double y_bounds[] = {-1.0, 1.0, 0.0};
+  constexpr const double initial_internal_x = 0.875;
+  constexpr const double initial_internal_y = 0.0;
+
+  DT dt;
+  for (int i = 0; i < num_bounds; i++) {
+    DT::Point pt(x_bounds[i], y_bounds[i]);
+    dt.insert(pt);
+  }
+
+  dt.insert(DT::Point(initial_internal_x, initial_internal_y));
+
+  std::list<DT::Vertex_handle> internal_verts = internal_vertices(dt);
+
+  SECTION("Internal Vertices") {
+    // Verify there's only 1 internal vertex
+    REQUIRE(internal_verts.size() == 1);
+    // Vertify that the vertex is the one we expect
+    DT::Vertex_handle vertex = internal_verts.front();
+    REQUIRE(vertex->point()[0] == initial_internal_x);
+    REQUIRE(vertex->point()[1] == initial_internal_y);
+  }
+
+  SECTION("Vertex Gradient") {
+    // This is a local minimum, so the energy should be iso
+    std::vector<finite_diffs> f_diffs = compute_gradient<2>(dt, internal_verts);
+    REQUIRE(f_diffs.size() == 1);
+
+    // This figure was constructed only so that the gradient will be in the
+    // negative x direction, and 0 in the y direction
+    REQUIRE(f_diffs[0].dx_minus < f_diffs[0].dx_plus - max_rel_error);
+    REQUIRE(std::abs(f_diffs[0].dy_plus - f_diffs[0].dy_minus) <=
+            max_rel_error);
+  }
+
+  SECTION("Vertex Gradient Descent") {
+    DT optimized = hot_optimize<2>(dt);
+    std::list<DT::Vertex_handle> optimized_verts = internal_vertices(optimized);
+    REQUIRE(optimized_verts.size() == 1);
+    DT::Vertex_handle vertex = optimized_verts.front();
+    REQUIRE(vertex->point()[0] < initial_internal_x);
+    REQUIRE(std::abs(vertex->point()[1] - initial_internal_y) <= max_rel_error);
+  }
+}
+
+TEST_CASE("Two Point Mesh Gradient Descent", "[HOT]") {
+  using K = CGAL::Cartesian<double>;
+  using K_real = K::RT;
+  using DT = CGAL::Delaunay_triangulation_2<K>;
+
+  constexpr const double max_rel_error =
+      std::numeric_limits<double>::epsilon() * 32.0;
+
+  constexpr const int num_bounds = 6;
+  const double x_bounds[] = {-1.5, -0.5, 0.5, 1.5, 0.5, -0.5};
+  const double y_bounds[] = {-0.5, 0.5, 1.5, 0.5, -0.5, -1.5};
+
+  constexpr const int num_internal = 2;
+  constexpr const double initial_internal_x[] = {-0.5, 0.5};
+  constexpr const double initial_internal_y[] = {-0.5, 0.5};
+
+  DT dt;
+  for (int i = 0; i < num_bounds; i++) {
+    DT::Point pt(x_bounds[i], y_bounds[i]);
+    dt.insert(pt);
+  }
+
+  for (int i = 0; i < num_internal; i++) {
+    dt.insert(DT::Point(initial_internal_x[i], initial_internal_y[i]));
+  }
+
+  std::list<DT::Vertex_handle> internal_verts = internal_vertices(dt);
+
+  SECTION("Internal Vertices") {
+    // Verify there's only 1 internal vertex
+    REQUIRE(internal_verts.size() == 2);
+    // Vertify that the vertex is the one we expect
+    DT::Vertex_handle vertex = internal_verts.front();
+    REQUIRE(vertex->point()[0] == initial_internal_x[0]);
+    REQUIRE(vertex->point()[1] == initial_internal_y[0]);
+
+    vertex = internal_verts.back();
+    REQUIRE(vertex->point()[0] == initial_internal_x[1]);
+    REQUIRE(vertex->point()[1] == initial_internal_y[1]);
+  }
+
+  SECTION("Vertex Gradient") {
+    // This is a local minimum, so the energy should be iso
+    std::vector<finite_diffs> f_diffs = compute_gradient<2>(dt, internal_verts);
+    REQUIRE(f_diffs.size() == 2);
+    // This is the sum of 4 right triangles of unit side length
+    // The energy is then 4 * 1/2 * 5/60 = 1/6
+    REQUIRE(std::abs(f_diffs[0].center * 6.0 - 1.0) <= max_rel_error);
+    REQUIRE(std::abs(f_diffs[1].center * 6.0 - 1.0) <= max_rel_error);
   }
 }
