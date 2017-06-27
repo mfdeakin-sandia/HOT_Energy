@@ -52,8 +52,6 @@ int main(int argc, char **argv) {
   // Test hot energy between triangle and triangle* == point
 
   DT dt;
-std::cout<< "star0-Hot_2,2 Mesh energy density for random DT: " << std::endl;
-
   const int num_points = 40;
 
 	for(int numiterations=0; numiterations<10; numiterations++){
@@ -62,8 +60,7 @@ std::cout<< "star0-Hot_2,2 Mesh energy density for random DT: " << std::endl;
 		std::cout << std::setw(5) << numiterations <<": " <<  energy << std::endl;
 	}
 
-
-// Make some non-DT triangles, compare to DT
+  // Make some non-DT triangles, compare to DT
 
 	// Set-up 1 
 	const int Wk=2;
@@ -248,28 +245,3 @@ std::cout<< "star0-Hot_2,2 Mesh energy density for random DT: " << std::endl;
   	write_ply("test.ply", dt);
   	return 0;
 }
-
-
-
-// std::cout << "Generated the Delaunay Triangulation of "
-  //          << num_points << " points" << std::endl;
-  //std::cout << "Resulting in " << dt.number_of_faces()
-  //          << " faces" << std::endl;
-  //int face_idx = 1;
-  //for(auto face_itr = dt.finite_faces_begin();
-    //  face_itr != dt.finite_faces_end();
-     // face_itr++, face_idx++) {
-	//std::cout <<"This the circumcetner of the face:" << CGAL::circumcenter(face) << std::endl; 
-    
-    //Face face = *face_itr;
-    //Triangle tri=face_to_tri(face); 
-    //std::cout<< "This is the star^0 energy contribution of the current triangle: " << tri_energy<2,0>(tri) << std::endl; 
-    //std::cout << "Face " << face_idx << " : ";
-    //for(int i = 0; i < tri_verts; i++) {
-     // std::cout << " ( " << face.vertex(i)->point()
-     //           << " )  ";
-   // }
-    //std::cout << std::endl;
-  //}
- // K_real energy = hot_energy<2>(dt);
-  //std::cout << "Mesh energy: " << energy << std::endl;
