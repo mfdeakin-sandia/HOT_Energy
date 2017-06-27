@@ -18,6 +18,7 @@ add_library(wasserstein src/wasserstein/WassersteinEdgeEdgeTest.cpp ${INCS})
 add_executable(energy src/energy/energy.cpp)
 add_executable(tester src/test/test.cpp)
 add_executable(wassertest src/wasserstein/wasserstein.cpp)
+#add_executable(WassersteinEdgeEdgeTest src/wasserstein/WassersteinEdgeEdgeTest.cpp)
 
 # get xcode project to show include files
 source_group("Include Files" FILES ${INCS})
@@ -42,3 +43,9 @@ target_compile_options(wassertest PUBLIC "-g")
 set_property(TARGET wassertest PROPERTY CXX_STANDARD 11)
 set_property(TARGET wassertest PROPERTY CXX_STANDARD_REQUIRED ON)
 target_link_libraries(wassertest wasserstein ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+
+#target_compile_options(WassersteinEdgeEdgeTest PUBLIC "-g")
+#set_property(TARGET WassersteinEdgeEdgeTest PROPERTY CXX_STANDARD 11)
+#set_property(TARGET WassersteinEdgeEdgeTest PROPERTY CXX_STANDARD_REQUIRED ON)
+#target_link_libraries(WassersteinEdgeEdgeTest wasserstein ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+

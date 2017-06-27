@@ -6,6 +6,7 @@
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Root_of_traits.h>
 #include <CGAL/number_utils.h>
+#include <CGAL/Triangulation_2.h>
 
 #include <boost/variant/variant.hpp>
 
@@ -15,6 +16,7 @@
 #include <limits>
 #include <list>
 #include <vector>
+#include <functional> 
 
 #include <polynomial.hpp>
 
@@ -28,6 +30,7 @@ using DT = CGAL::Delaunay_triangulation_2<K>;
 using Face = DT::Face;
 using Point = DT::Point;
 using Vertex = DT::Vertex;
+using midpoint=CGAL::Point_2<K>;
 
 using Triangle = CGAL::Triangle_2<K>;
 using Line = CGAL::Line_2<K>;
@@ -49,6 +52,8 @@ struct finite_diffs {
 
 void order_points(std::array<Point, tri_verts> &verts);
 Triangle face_to_tri(const Face &face);
+double signed_dist_circumcenters(const Triangle &tri, int vertex_index);
+int sign(double number);
 
 double wasserstein2_edge_edge(const Segment &e0, const Segment &e1);
 
@@ -57,8 +62,9 @@ std::list<DT::Vertex_handle> internal_vertices(const DT &dt);
 /* Computes 1 or 2 triangles which can be used for the
  * piecewise integral of the Wasserstein distance with
  * k */
-boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1>>
-integral_bounds(const Triangle &face);
+boost::variant<std::array<Triangle, 2>, 
+               std::array<Triangle, 1> >
+integral_bounds(const Triangle &face); //boost::variant is like a vector where the entries can be different types
 
 /* Computes the circumcenter of the triangle */
 Point triangle_circumcenter(const Triangle &face);
@@ -73,8 +79,10 @@ public:
       /* Start by computing the lines used for boundaries
        * and the width.
        */
-      std::array<Point, tri_verts> verts = {area.vertex(0), area.vertex(1),
-                                            area.vertex(2)};
+      // this is making an array of tri_verts points
+      std::array<Point, tri_verts> verts = {
+          area.vertex(0), area.vertex(1), area.vertex(2)};
+
       order_points(verts);
 
       /* Find the index of the non-vertical point
@@ -133,7 +141,7 @@ public:
       integral += std::abs(left + -right);
     }
     return integral;
-  }
+  }	 
 };
 
 /* Computes the k Wasserstein distance of the triangular
@@ -149,11 +157,11 @@ template <> K_real triangle_w<2>(const Triangle &tri) {
   if (bounds.which() == 0) {
     // std::array<Triangle, 2>
     auto area = boost::get<std::array<Triangle, 2>>(bounds);
-    return triangle_w_helper<std::array<Triangle, 2>, 2>()(area, circumcenter);
+    return triangle_w_helper<std::array<Triangle, 2>, 2>()(area, circumcenter); //triangle_w_helper gets handed 2 triangles. second instance of 2 is referring to W_2
   } else {
     // std::array<Triangle, 1>
     auto area = boost::get<std::array<Triangle, 1>>(bounds);
-    return triangle_w_helper<std::array<Triangle, 1>, 2>()(area, circumcenter);
+    return triangle_w_helper<std::array<Triangle, 1>, 2>()(area, circumcenter); //triangle_w_helper gets handed 1 triangle. second instance of 2 is referring to W_2
   }
 }
 
@@ -164,6 +172,7 @@ template <int k> K_real hot_energy(const DT &dt) {
   for (auto face_itr = dt.finite_faces_begin();
        face_itr != dt.finite_faces_end(); face_itr++) {
     Triangle tri = face_to_tri(*face_itr);
+	//std::cout<< "This is the coordinates of a face of triangle: " << tri.vertex(0) << ", " << tri.vertex(1) << ", " << tri.vertex(2) << std::endl; 
     K_real area = tri.area();
     K_real wasserstein = triangle_w<k>(tri);
     energy += wasserstein * area;
@@ -240,6 +249,100 @@ template <int k> DT hot_optimize(DT dt, K_real min_delta_energy = 0.1) {
     }
   }
   return dt;
+}
+
+// This computes h_(vertex_index)
+double signed_dist_circumcenters(const Triangle &tri, int vertex_index) {
+	Point point0=tri.vertex(vertex_index);
+	Point point1_opp=tri.vertex(vertex_index+1);
+	Point point2_opp=tri.vertex(vertex_index+2);
+	//std::cout << "point0: " << point0.x() << " " << point0.y() <<std::endl;
+	//std::cout << "point1: " << point1_opp.x() << " " << point1_opp.y() <<std::endl;
+	//std::cout << "point2: " << point2_opp.x() << " " << point2_opp.y() <<std::endl;
+	double cot=((point1_opp -point0)*(point2_opp-point0))/sqrt(squared_distance(point1_opp, point0)*squared_distance(point2_opp, point0)-pow((point1_opp -point0)*(point2_opp-point0),2));
+
+	//std::cout<< "cot: " << cot << std::endl;
+	//double cotdenom=sqrt(squared_distance(point1_opp, point0)*squared_distance(point2_opp, point0)-pow((point1_opp -point0)*(point2_opp-point0),2));
+	//double cotnum=((point1_opp -point0)*(point2_opp-point0));
+	//std:: cout<< "cotdenom: " << cotdenom << std::endl;
+	//std::cout<< "cotnum: "<< cotnum<<std::endl;
+	double length_opp_edge= sqrt(squared_distance(point1_opp, point2_opp));
+	//std::cout << "legnth_opp_edge: " << length_opp_edge << std::endl;
+	return 0.5*length_opp_edge*cot;
+}
+
+template<const int k, const int star>
+double subtri_energy(const Point &xi, const Point &xj, double hk);
+
+template<>
+double subtri_energy<2,0>(const Point &xi, const Point &xj, double hk){
+	double dij= 0.5*sqrt(pow(xi.x()-xj.x(),2.0)+pow(xi.y()-xj.y(),2.0));
+	//std::cout<< "dij: " << dij << std::endl; 
+	return pow(dij,3)*hk/2 +dij*pow(hk,3)/6;
+}
+
+template<>
+double subtri_energy<2,1>(const Point &xi, const Point &xj, double hk){
+	double dij= 0.5*sqrt(pow(xi.x()-xj.x(),2.0)+pow(xi.y()-xj.y(),2.0)); // computes distance from xi to midpoint
+	return (2.0/3)*(pow(dij,3)*hk+dij*pow(hk,3));
+	//int sign=sign(hk+hl);
+	//return 2.0/3*(sign*(hk+hl)*pow(dij, 3)+sign*dij*(pow(hk,3)+pow(hl, 3)));
+}
+
+template<>
+double subtri_energy<2,2>(const Point &xi, const Point &xj, double hk){
+	double dij= 0.5*sqrt(pow(xi.x()-xj.x(),2.0)+pow(xi.y()-xj.y(),2.0));
+	return pow(dij,3)*hk/6 +dij*pow(hk,3)/2;
+}
+
+template<int Wk, int star>
+double tri_energy(const Triangle &tri){
+	double energy=0;
+		for(int k=0; k<3; k++){
+			double hk=signed_dist_circumcenters(tri,k);
+			//std::cout<< "hk: "<< hk <<std::endl; 
+			//std::cout<<std::setw(6) << "subtri eng: " << std::setw(10) << subtri_energy<Wk,star>(tri.vertex(k+1), tri.vertex(k+2), hk)<< std::endl;
+		energy+=subtri_energy<Wk,star>(tri.vertex(k+1), tri.vertex(k+2), hk); 
+		}
+	return energy;
+}
+
+template<int Wk, int star>
+double hot_energy_density(const DT &dt){
+  double energy = 0;
+  double mesh_volume=0;
+
+  for(auto face_itr = dt.finite_faces_begin(); face_itr != dt.finite_faces_end(); face_itr++) {
+    Triangle tri = face_to_tri(*face_itr);
+    energy += tri_energy<Wk,star>(tri);
+    mesh_volume+=tri.area();
+  }
+//	All_edge_iterator edge_itr(t); 
+	
+//	for(auto edge_itr=dt.All_edges_iterator(); edge_itr!=
+//	Segment seg=edge_to_seg(*edge_itr);
+
+	
+  //K_real energy_density=energy/mesh_volume;	
+  //return energy_density;
+  return energy;
+}
+
+//template<int Wk, int star>
+//double edge_energy(Segment seg, Point xk, Point xl);
+
+//template<>
+//double edge_energy(Segment seg, Point xk, Point xl)<2,1>{
+//	double hk= sign_dist_circumcenters2(seg, xk);
+//	double hl=sign_dist_circumcenters2(seg, xl);
+	
+//	double energy=0
+//	return energy; 
+//}
+
+int sign(double number){
+	if(number > 0) return 1;
+		else return -1;
 }
 
 #endif // _HOT_HPP_
