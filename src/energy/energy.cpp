@@ -1,6 +1,9 @@
 
 #include <hot.hpp>
+#include <analytic_HOT_energy_Derv.hpp>
+#include <energyNOweights.hpp>
 #include <ply_writer.hpp>
+//#include <build_triangulation.hpp>
 
 #include <random>
 #include <vector>
@@ -32,23 +35,56 @@ void test_tri_w2() {
             << std::endl;
 }
 
+/*
 using RNG = std::mt19937_64;
 
 constexpr const float min_pos = 10.0;
 constexpr const float max_pos = 20.0;
 
-void generate_rand_dt(int num_points, DT &dt) {
+template <typename T>
+void generate_rand_t(int num_points, T &t) {
   std::random_device rd;
   RNG engine(rd());
   std::uniform_real_distribution<double> genPos(min_pos,
                                                 max_pos);
   for(int i = 0; i < num_points; i++) {
     Point pt(genPos(engine), genPos(engine));
-    dt.insert(pt);
+    t.insert(pt);
   }
 }
 
+
+*/
 int main(int argc, char **argv) {
+	RegT rt; 
+	
+
+	DT right_tri; 
+	right_tri.insert(Point(0,0)); 
+	right_tri.insert(Point(1,0)); 
+	right_tri.insert(Point(0,1)); 
+	std::cout<<right_tri.number_of_faces() <<std::endl; 
+	
+	double gradient_v[2]={0,0};
+	Vertex_iterator vertex_iterator=right_tri.finite_vertices_begin();
+	
+	energy_gradient(right_tri,2,2, vertex_iterator, gradient_v, false);
+
+	std::list<DT::Vertex_handle> internal_verts=internal_vertices(right_tri);
+	compute_gradient<2>(right_tri, internal_verts); 
+
+	Triangle tri(Point(0,0), Point(1,0), Point(0,1));
+	//double star0_energy=tri_energy<2,0>(tri); 
+	//double star1_energy=tri_energy<2,1>(tri);
+	double sarah_energy=tri_energy<2,2>(tri);
+
+	K_real tri_was=triangle_w<2>(tri);
+	double area=tri.area();
+	double Mich_energy=area*tri_was; 
+
+	
+		
+	std::cout<< std::setw(15) << sarah_energy <<std::setw(15) << Mich_energy <<std::endl;
 
   // Test hot energy between triangle and triangle* == point
 	
@@ -62,16 +98,51 @@ int main(int argc, char **argv) {
   const int num_points = 40;
 
 	for(int numiterations=0; numiterations<10; numiterations++){
-  		generate_rand_dt(num_points, dt);
+  		generate_rand_t(num_points, dt);
 		K_real energyT=energy_density_TMethod<2,1>(dt);
 		double energyE=energy_density_EMethod<2,1>(dt, true); 
 		Vertex_iterator vi=dt.finite_vertices_begin();
 		double energy_grad[2]={0,0}; 
-		energy_gradient(dt,2,1, vi, energy_grad,true);
+		double energy_grad_all_internal_verts[num_points][2];
+		energy_gradient(dt,2,1, vi, energy_grad,false);
 
 		std::cout << std::setw(15)<< energyT << std::setw(15) <<energyE << std::setw(15) << "(" << energy_grad[0] <<"," << energy_grad[1] <<")" << std::endl;
-	}
 
+		std::list<DT::Vertex_handle> internal_verts;
+		int i=0; 
+		for(auto v_itr = dt.finite_vertices_begin(); v_itr != dt.finite_vertices_end(); v_itr++, i++){
+			internal_verts.push_back(v_itr); 
+			energy_gradient(dt,2,2, v_itr, energy_grad,false);
+			energy_grad_all_internal_verts[i][0]=energy_grad[0];
+			energy_grad_all_internal_verts[i][1]=energy_grad[1];
+			// std::cout<< "(" << energy_grad_all_internal_verts[i][0] <<", "<< energy_grad_all_internal_verts[i][1] <<")"<<endl; 
+		}
+			std::vector<finite_diffs> diffs=compute_gradient<2>(dt,internal_verts);
+			for(int j=0; j<num_points ; j++){
+				K_real dx=diffs[j].dx_plus-diffs[j].dx_minus;
+				K_real dy=diffs[j].dy_plus-diffs[j].dy_minus;
+				std::cout<<"("<<dx<<", " << dy <<")" << std::endl;
+				std::cout<< "(" << energy_grad_all_internal_verts[j][0] <<"," << energy_grad_all_internal_verts[j][1] <<")" << std::endl<<std::endl;
+			}
+	
+
+			//energy_gradient(dt,2,2,internal_verts[0], energy_grad, false); 
+
+			//std::cout<<"("<<dx<<", " << dy <<")" << std::endl;
+			//std::cout<< "(" << energy_grad[0] <<"," << energy_grad[1] <<")" << std::endl<<std::endl;
+
+	
+
+		//energy_gradient(dt,2,1, vi, energy_grad,true);
+
+		//std::cout << std::setw(15)<< energyT << std::setw(15) <<energyE << std::setw(15) << "(" << energy_grad[0] <<"," << energy_grad[1] <<")" << std::endl;
+	} 
+	
+
+
+// finite difference derivatives
+	// make list of internal vertices
+	
 	const int Wk=2; 
 	const int star=1; 
 
