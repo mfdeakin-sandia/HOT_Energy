@@ -3,6 +3,7 @@
 
 
 #include <hot.hpp>
+#include <lloyds.hpp>
 #include <ply_writer.hpp>
 #include<Sb.hpp> 
 
@@ -31,6 +32,8 @@ int main(int argc, char **argv) {
 		double energy= tri_energy<2,0>(triangle);
 		outputFile << std::setw(15) << angle << std::setw(15) << energy<<std::endl; 
 		angle-=.01;
+		//std::vector<Point> tri_pts={p_moving1, p_moving2, p_fixed};
+		//std::cout<< center_mass_polygon(tri_pts) << std::endl; 
 	}
 	outputFile.close(); 
 

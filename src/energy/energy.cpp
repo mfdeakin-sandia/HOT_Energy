@@ -58,7 +58,7 @@ void generate_rand_t(int num_points, T &t) {
 int main(int argc, char **argv) {
 	RegT rt; 
 	
-
+/*
 	DT right_tri; 
 	right_tri.insert(Point(0,0)); 
 	right_tri.insert(Point(1,0)); 
@@ -142,7 +142,8 @@ int main(int argc, char **argv) {
 
 // finite difference derivatives
 	// make list of internal vertices
-	
+
+*/	
 	const int Wk=2; 
 	const int star=1; 
 
@@ -154,18 +155,22 @@ int main(int argc, char **argv) {
 	
 	std::vector<double> heights_NDT_less_DT;
 
-
+	std::ofstream outputFile; 
+	
+	outputFile.open("NDTvDT/NDTvDT_exp1_star0.txt"); 
 
 	std::cout<< "Set-up 1 "<< std::endl;
 	std:: cout<< " Results for Wk=" << Wk << ", star=" <<star << std::endl; 
         std::cout << std:: setw(6) << "" << std::setw(10) << "Tri 1" << std::setw(10) << "Tri 2" << std::setw(10) << "sum" << std::endl; 
-	double height=1;	
+	double height=1;
+
+	//star 0	
 	while( height>0){
 		Triangle DTtri1(Point(-1,0), Point(0,-1), Point(0,height));
 		Triangle DTtri2(Point(0,height), Point(1,0), Point(0,-1));
 		
-		K_real DTtri1_energy=tri_energy<Wk,star>(DTtri1);
-		K_real DTtri2_energy=tri_energy<Wk,star>(DTtri2);
+		K_real DTtri1_energy=tri_energy<2,0>(DTtri1);
+		K_real DTtri2_energy=tri_energy<2,0>(DTtri2);
 		K_real DT_energy=DTtri1_energy+DTtri2_energy; 
 		
 	
@@ -173,20 +178,96 @@ int main(int argc, char **argv) {
 		Triangle NDTtri1(Point(-1,0), Point(0,height), Point(1,0));
 		Triangle NDTtri2(Point(-1,0), Point(0,-1), Point(1,0));
 
-		K_real NDTtri1_energy=tri_energy<Wk,star>(NDTtri1); 
-		K_real NDTtri2_energy=tri_energy<Wk,star>(NDTtri2); 
+		K_real NDTtri1_energy=tri_energy<2,0>(NDTtri1); 
+		K_real NDTtri2_energy=tri_energy<2,0>(NDTtri2); 
 		K_real NDT_energy=NDTtri1_energy + NDTtri2_energy; 
 
-		std::cout<< std::setw(8) <<"height: "<< std::setw(10) << height <<std::endl;
-		std:: cout <<std::setw(8) << "DT: "<<  std::setw(10) << DTtri1_energy << std::setw(10) << DTtri2_energy << std::setw(10) << DT_energy << std::endl;
-		std:: cout << std::setw(8) << "NDT: " << std::setw(10) << NDTtri1_energy << std::setw(10) << NDTtri2_energy << std::setw(10) << NDT_energy << std::endl<<std::endl;
-		height-=.1;
+		//outFile<< std::setw(8) <<"height: "<< std::setw(10) << height <<std::endl;
+		//outFile <<std::setw(8) << "DT: "<<  std::setw(10) << DTtri1_energy << std::setw(10) << DTtri2_energy << std::setw(10) << DT_energy << std::endl;
+		//outFile << std::setw(8) << "NDT: " << std::setw(10) << NDTtri1_energy << std::setw(10) << NDTtri2_energy << std::setw(10) << NDT_energy << std::endl<<std::endl;
+	
+		outputFile<< std::setw(8) << height << std::setw(15) << DT_energy << std::setw(15) << NDT_energy << std::endl;
+
+		height-=.01;
 		
 		if(NDT_energy <DT_energy)
 			heights_NDT_less_DT.push_back(height); 
 		
 	
 	}
+	outputFile.close(); 
+
+
+	//star 1
+	outputFile.open("NDTvDT/NDTvDT_exp1_star1.txt"); 
+	height=1;
+	while( height>0){
+		Triangle DTtri1(Point(-1,0), Point(0,-1), Point(0,height));
+		Triangle DTtri2(Point(0,height), Point(1,0), Point(0,-1));
+		
+		K_real DTtri1_energy=tri_energy<2,1>(DTtri1);
+		K_real DTtri2_energy=tri_energy<2,1>(DTtri2);
+		K_real DT_energy=DTtri1_energy+DTtri2_energy; 
+		
+	
+	
+		Triangle NDTtri1(Point(-1,0), Point(0,height), Point(1,0));
+		Triangle NDTtri2(Point(-1,0), Point(0,-1), Point(1,0));
+
+		K_real NDTtri1_energy=tri_energy<2,1>(NDTtri1); 
+		K_real NDTtri2_energy=tri_energy<2,1>(NDTtri2); 
+		K_real NDT_energy=NDTtri1_energy + NDTtri2_energy; 
+
+		//outFile<< std::setw(8) <<"height: "<< std::setw(10) << height <<std::endl;
+		//outFile <<std::setw(8) << "DT: "<<  std::setw(10) << DTtri1_energy << std::setw(10) << DTtri2_energy << std::setw(10) << DT_energy << std::endl;
+		//outFile << std::setw(8) << "NDT: " << std::setw(10) << NDTtri1_energy << std::setw(10) << NDTtri2_energy << std::setw(10) << NDT_energy << std::endl<<std::endl;
+	
+		outputFile<< std::setw(8) << height << std::setw(10) << DT_energy << std::setw(10) << NDT_energy << std::endl;
+
+		height-=.01;
+		
+		if(NDT_energy <DT_energy)
+			heights_NDT_less_DT.push_back(height); 
+		
+	
+	}
+	outputFile.close(); 
+
+	
+	//star 2
+	outputFile.open("NDTvDT/NDTvDT_exp1_star2.txt"); 
+	height=1;
+	while( height>0){
+		
+		Triangle DTtri1(Point(-1,0), Point(0,-1), Point(0,height));
+		Triangle DTtri2(Point(0,height), Point(1,0), Point(0,-1));
+		
+		K_real DTtri1_energy=tri_energy<2,2>(DTtri1);
+		K_real DTtri2_energy=tri_energy<2,2>(DTtri2);
+		K_real DT_energy=DTtri1_energy+DTtri2_energy; 
+		
+	
+		Triangle NDTtri1(Point(-1,0), Point(0,height), Point(1,0));
+		Triangle NDTtri2(Point(-1,0), Point(0,-1), Point(1,0));
+
+		K_real NDTtri1_energy=tri_energy<2,2>(NDTtri1); 
+		K_real NDTtri2_energy=tri_energy<2,2>(NDTtri2); 
+		K_real NDT_energy=NDTtri1_energy + NDTtri2_energy; 
+
+		//outFile<< std::setw(8) <<"height: "<< std::setw(10) << height <<std::endl;
+		//outFile <<std::setw(8) << "DT: "<<  std::setw(10) << DTtri1_energy << std::setw(10) << DTtri2_energy << std::setw(10) << DT_energy << std::endl;
+		//outFile << std::setw(8) << "NDT: " << std::setw(10) << NDTtri1_energy << std::setw(10) << NDTtri2_energy << std::setw(10) << NDT_energy << std::endl<<std::endl;
+	
+		outputFile<< std::setw(8) << height << std::setw(10) << DT_energy << std::setw(10) << NDT_energy << std::endl;
+
+		height-=.01;
+		
+		if(NDT_energy <DT_energy)
+			heights_NDT_less_DT.push_back(height); 
+		
+	
+	}
+	outputFile.close(); 
 
 	std::cout<< "Heights where NDT <DT :" <<std::endl;
 	std::vector<double>::iterator height_iter=heights_NDT_less_DT.begin();
@@ -230,6 +311,88 @@ int main(int argc, char **argv) {
 	//std::cout<< "This is the sample subtriangle energy: " << subtri_energy<2,0>(samplepoint1, samplepoint2 , 5.0) << std::endl; 
 
 
+ //Expirement 2 
+
+
+	//star 0	
+	outputFile.open("NDTvDT/NDTvDT_exp2_star0.txt"); 
+	height=1;
+	while( height>0){
+		Triangle DTtri1(Point(-1,0), Point(-1,height), Point(0,-.5));
+		Triangle DTtri2(Point(-1,height), Point (1,0), Point(0,-.5)); 
+		
+		K_real DTtri1_energy=tri_energy<2,0>(DTtri1);
+		K_real DTtri2_energy=tri_energy<2,0>(DTtri2);
+		K_real DT_energy=DTtri1_energy+DTtri2_energy; 
+	
+		Triangle NDTtri1(Point(-1,0), Point(1,0), Point(-1,height)); 
+		Triangle NDTtri2(Point(-1,0), Point(0,-.5), Point(1,0)); 
+
+		K_real NDTtri1_energy=tri_energy<2,1>(NDTtri1); 
+		K_real NDTtri2_energy=tri_energy<2,1>(NDTtri2); 
+		K_real NDT_energy=NDTtri1_energy + NDTtri2_energy; 
+	
+		outputFile<< std::setw(8) << height << std::setw(15) << DT_energy << std::setw(15) << NDT_energy << std::endl;
+
+		height-=.01;
+
+	}
+	outputFile.close(); 
+
+
+	//star 1
+	
+	outputFile.open("NDTvDT/NDTvDT_exp2_star1.txt"); 
+	height=1;	
+	while( height>0){
+		Triangle DTtri1(Point(-1,0), Point(-1,height), Point(0,-.5));
+		Triangle DTtri2(Point(-1,height), Point (1,0), Point(0,-.5)); 
+		
+		K_real DTtri1_energy=tri_energy<2,1>(DTtri1);
+		K_real DTtri2_energy=tri_energy<2,1>(DTtri2);
+		K_real DT_energy=DTtri1_energy+DTtri2_energy; 
+	
+		Triangle NDTtri1(Point(-1,0), Point(1,0), Point(-1,height)); 
+		Triangle NDTtri2(Point(-1,0), Point(0,-.5), Point(1,0)); 
+
+		K_real NDTtri1_energy=tri_energy<2,1>(NDTtri1); 
+		K_real NDTtri2_energy=tri_energy<2,1>(NDTtri2); 
+		K_real NDT_energy=NDTtri1_energy + NDTtri2_energy; 
+	
+		outputFile<< std::setw(8) << height << std::setw(15) << DT_energy << std::setw(15) << NDT_energy << std::endl;
+
+		height-=.01;
+
+	}
+	outputFile.close(); 
+
+	//star 1
+	
+	outputFile.open("NDTvDT/NDTvDT_exp2_star2.txt"); 
+	height=1;	
+	while( height>0){
+		Triangle DTtri1(Point(-1,0), Point(-1,height), Point(0,-.5));
+		Triangle DTtri2(Point(-1,height), Point (1,0), Point(0,-.5)); 
+		
+		K_real DTtri1_energy=tri_energy<2,2>(DTtri1);
+		K_real DTtri2_energy=tri_energy<2,2>(DTtri2);
+		K_real DT_energy=DTtri1_energy+DTtri2_energy; 
+		
+	
+	
+		Triangle NDTtri1(Point(-1,0), Point(1,0), Point(-1,height)); 
+		Triangle NDTtri2(Point(-1,0), Point(0,-.5), Point(1,0)); 
+
+		K_real NDTtri1_energy=tri_energy<2,2>(NDTtri1); 
+		K_real NDTtri2_energy=tri_energy<2,2>(NDTtri2); 
+		K_real NDT_energy=NDTtri1_energy + NDTtri2_energy; 
+	
+		outputFile<< std::setw(8) << height << std::setw(15) << DT_energy << std::setw(15) << NDT_energy << std::endl;
+
+		height-=.01;
+
+	}
+	outputFile.close(); 
 
 //////////////////////////////////////////////////////////////
 /////////////////////////////////////////////
@@ -241,7 +404,7 @@ int main(int argc, char **argv) {
 
 	std::cout<<std::endl<< "hexagon with free vertex experiment: "<< std::endl;
 	
-	std::ofstream outputFile;
+	//std::ofstream outputFile;
 	outputFile.open("total_hex_energy.txt");
 
 	// hexgon perimeter points
@@ -355,6 +518,6 @@ int main(int argc, char **argv) {
 	//std::cout<< "This is the total hexagon energy: " << total_hex_energy << std::endl;
 
 
-  	write_ply("test.ply", dt);
+  	//write_ply("test.ply", dt);
   	return 0;
 }

@@ -313,6 +313,25 @@ int main(int argc, char **argv) {
 
 	outputFile.close();
 
+
+	free_x_coor= 0; 
+	free_y_coor= .2; 
+	double step=.01;
+		while(free_y_coor >.001){	
+			Point freept(free_x_coor, free_y_coor); 
+			Triangle tri(freept, fixed_pt1, fixed_pt2); 
+			double equal_weights[3]={0,0,0}; 
+			Point circ=weighted_circumcenter(tri, equal_weights); 
+			std::cout << circ.y() <<std::endl;  
+
+			free_y_coor-=step; 
+		}
+double equal_weights[3]={0,0,0}; 
+Triangle sample_tri(Point (0,0), Point(1,0), Point(1,.25)); 
+Point circ=weighted_circumcenter(sample_tri, equal_weights);
+std::cout <<circ.x() << ", " << circ.y() <<std::endl; 
+
+
 //////////////////////////// Exp 1f ////////////////
 /////////////////////////// Energy Sb/perim //////////////////////////
 	free_x_coor=-2;

@@ -94,10 +94,10 @@ Point weighted_circumcenter(const Triangle &tri, double weight[3]){
 
 	double e01_perp_length=sqrt(pow(e01_perp[0],2)+pow(e01_perp[1],2));
 
-	double e01_perp_unit[2];
-	for(int i=0; i<2; i++){
-		e01_perp_unit[i]=e01_perp[i]/e01_perp_length; 
-	}
+//	double e01_perp_unit[2];
+//	for(int i=0; i<2; i++){
+//		e01_perp_unit[i]=e01_perp[i]/e01_perp_length; 
+//	}
 
 	double e02_perp[2];
 		if( CGAL::orientation(x0_pt,x2_pt,x1_pt)==CGAL::LEFT_TURN){
@@ -112,10 +112,10 @@ Point weighted_circumcenter(const Triangle &tri, double weight[3]){
 
 	
 	double e02_perp_length=sqrt(pow(e02_perp[0],2)+pow(e02_perp[1],2));
-	double e02_perp_unit[2];
-	for(int i=0; i<2; i++){
-		e02_perp_unit[i]=e02_perp[i]/e02_perp_length; 
-	}
+//	double e02_perp_unit[2];
+//	for(int i=0; i<2; i++){
+//		e02_perp_unit[i]=e02_perp[i]/e02_perp_length; 
+//	}
 	
 	double scale1=(pow(x0[0]-x1[0],2)+pow(x0[1]-x1[1],2)+weight[0]-weight[1])/(4*triangle_area);
 	double scale2=(pow(x0[0]-x2[0],2)+pow(x0[1]-x2[1],2)+weight[0]-weight[2])/(4*triangle_area);
