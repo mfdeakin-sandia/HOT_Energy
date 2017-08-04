@@ -1,0 +1,2 @@
+/usr/bin/ar qc libhot.a  CMakeFiles/hot.dir/src/hot/hot.cpp.o CMakeFiles/hot.dir/src/hot/ply_writer.cpp.o
+/usr/bin/ranlib libhot.a

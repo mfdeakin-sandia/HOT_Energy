@@ -33,9 +33,13 @@ add_executable(exp6_rectangle src/experiments/exp6_rectangle.cpp)
 add_executable(lloydsCVT src/energy/lloydsCVT.cpp)
 add_executable(exp7_vertex_to_fixed_edge_correctedformulas src/experiments/exp7_vertex_to_fixed_edge_correctedformulas.cpp)
 add_executable(sandbox src/sandbox/sandbox.cpp)
+add_executable(exp5_horseV_DT src/experiments/exp5_horseV_DT.cpp)
 
 add_executable(NDTvDT_exp1 src/experiments/NDTvDT/NDTvDT_exp1.cpp)
 add_executable(NDTvDT_exp2 src/experiments/NDTvDT/NDTvDT_exp2.cpp)
+add_executable(NDTvDT_exp3 src/experiments/NDTvDT/NDTvDT_exp3.cpp)
+
+add_executable(draw_voronoi src/sandbox/draw_voronoi.cpp)
 #
 
 #add_executable(WassersteinEdgeEdgeTest src/wasserstein/WassersteinEdgeEdgeTest.cpp)
@@ -106,6 +110,20 @@ target_link_libraries(NDTvDT_exp1 hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARI
 set_property(TARGET NDTvDT_exp2 PROPERTY CXX_STANDARD 11)
 set_property(TARGET NDTvDT_exp2 PROPERTY CXX_STANDARD_REQUIRED ON)
 target_link_libraries(NDTvDT_exp2 hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+
+set_property(TARGET NDTvDT_exp3 PROPERTY CXX_STANDARD 11)
+set_property(TARGET NDTvDT_exp3 PROPERTY CXX_STANDARD_REQUIRED ON)
+target_link_libraries(NDTvDT_exp3 hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+
+set_property(TARGET exp5_horseV_DT PROPERTY CXX_STANDARD 11)
+set_property(TARGET exp5_horseV_DT PROPERTY CXX_STANDARD_REQUIRED ON)
+target_link_libraries(exp5_horseV_DT hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+
+set_property(TARGET draw_voronoi PROPERTY CXX_STANDARD 11)
+set_property(TARGET draw_voronoi PROPERTY CXX_STANDARD_REQUIRED ON)
+target_link_libraries(draw_voronoi hot ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES})
+
+
 #
 
 

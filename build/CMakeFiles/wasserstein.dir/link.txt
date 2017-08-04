@@ -1,0 +1,2 @@
+/usr/bin/ar qc libwasserstein.a  CMakeFiles/wasserstein.dir/src/wasserstein/WassersteinEdgeEdgeTest.cpp.o
+/usr/bin/ranlib libwasserstein.a
