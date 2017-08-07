@@ -41,9 +41,24 @@ using EK_real=EK::RT;
 
 //using CK=CGAL::Exact_predicates_inexact_constructions_kernel;
 
+// Newer versions of CGAL define Weighted_point inside of all kernels
+// but before that we have to use RegularTriangulationTraits_2 implementations
+// Note I'm not certain which version this starts at;
+// but it's between 4.9.0 and 4.11.0, so adjust this check as needed
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4, 9, 0)
+
 using DT = CGAL::Delaunay_triangulation_2<K>;
 using RegT=CGAL::Regular_triangulation_2<K>;
 
+#else
+
+#include <CGAL/Regular_triangulation_euclidean_traits_2.h>
+
+using TriTraits = CGAL::Regular_triangulation_euclidean_traits_2<K>;
+using DT = CGAL::Delaunay_triangulation_2<TriTraits>;
+using RegT=CGAL::Regular_triangulation_2<TriTraits>;
+
+#endif // CGAL_VERSION_NR
 
 using Face = DT::Face;
 using Point = DT::Point;
