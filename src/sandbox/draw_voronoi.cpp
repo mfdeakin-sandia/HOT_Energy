@@ -145,7 +145,7 @@ std::cout <<"RT edges" <<std::endl;
 		std::vector<Weightpt> wpoints3;
 
 		//wpoints3.push_back(Weightpt(Point_2(0,4),0)); 
-  		wpoints3.push_back(Weightpt(Point_2(4,5),0)); 
+		wpoints3.push_back(Weightpt(Point_2(4,5),0)); 
 		wpoints3.push_back(Weightpt(Point_2(9,2),0)); 
 		wpoints3.push_back(Weightpt(Point_2(7,1),0)); 
 		wpoints3.push_back(Weightpt(Point_2(3,1),0)); 
@@ -153,7 +153,7 @@ std::cout <<"RT edges" <<std::endl;
 		
 		
 		for(int i=0; i <4; i++){
-			Triangle tri(Point_2(freeptx, freepty), wpoints3[i].point(), wpoints3[(i+1)%4].point());
+			Triangle tri(Point_2(freeptx, freepty), static_cast<Point>(wpoints3[i].point()), static_cast<Point>(wpoints3[(i+1)%4].point()));
 			energy_NU+= tri_energy<2,1>(tri); 
 		}
 		
@@ -171,12 +171,12 @@ std::cout <<"RT edges" <<std::endl;
 		Regular_triangulation_2 rt3; 
 		rt3.insert(wpoints3.begin(),wpoints3.end());
 		//std::cout <<"RT edges" <<std::endl;
-			std::cout << "\\begin{tikzpicture}" <<std::endl; 
+		std::cout << "\\begin{tikzpicture}" <<std::endl; 
 		for(auto f_itr=rt3.finite_faces_begin(); f_itr!=rt3.finite_faces_end(); f_itr ++){
 	//		std::cout <<" \\draw (" << ((f_itr->vertex(0))->point()).x() <<" , " << ((f_itr->vertex(0))->point()).y() << " ) -- ("<< ((f_itr->vertex(1))->point()).x() <<" , " << ((f_itr->vertex(1))->point()).y() << " ) -- (" <<((f_itr->vertex(2))->point()).x() <<" , " << ((f_itr->vertex(2))->point()).y() << " ) -- (" <<((f_itr->vertex(0))->point()).x() <<" , " << ((f_itr->vertex(0))->point()).y() << " );" << std::endl;
 	
-		Triangle tri((*f_itr).vertex(0)->point(), (*f_itr).vertex(1)->point(), (*f_itr).vertex(2)->point()); 
-		energy_U+=tri_energy<2,1>(tri); 
+			Triangle tri(static_cast<Point>((*f_itr).vertex(0)->point()), static_cast<Point>((*f_itr).vertex(1)->point()), static_cast<Point>((*f_itr).vertex(2)->point())); 
+			energy_U+=tri_energy<2,1>(tri); 
 		}
 		std::cout <<"\\end{tikzpicture}" <<std::endl<<std::endl; 
 			
