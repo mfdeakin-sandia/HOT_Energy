@@ -29,7 +29,8 @@
 #include <limits>
 #include <list>
 #include <vector>
-#include <functional> 
+#include <functional>
+#include <random>
 
 #include <polynomial.hpp>
 
@@ -116,7 +117,7 @@ void generate_rand_t(int num_points, T &t) {
   std::uniform_real_distribution<double> genPos(min_pos,
                                                 max_pos);
   for(int i = 0; i < num_points; i++) {
-    Point pt(genPos(engine), genPos(engine));
+    typename T::Point pt(genPos(engine), genPos(engine));
     t.insert(pt);
   }
 }

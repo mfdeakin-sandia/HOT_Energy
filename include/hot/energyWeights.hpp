@@ -61,9 +61,9 @@ double triangle_energy_weights(const weighted_Face_handle &face, const Point &wc
 		double weighti=((face->vertex(i))->point()).weight();
 		double weightj=((face->vertex(i+1))->point()).weight();
 	
-		Point xi=(face->vertex(i))->point();
-		Point xj=(face->vertex(i+1))->point();
-		Point xk=(face->vertex(i+2))->point(); 
+		Point xi((face->vertex(i))->point());
+		Point xj((face->vertex(i+1))->point());
+		Point xk((face->vertex(i+2))->point());
 		double length_eij=sqrt(pow(xi.x()-xj.x(),2.0)+pow(xi.y()-xj.y(),2.0));
 
 
@@ -94,7 +94,7 @@ double triangle_energy_weights_dividebyArea(const weighted_Face_handle &face, co
 		return -1;
 	}  
 	
-	Triangle tri=Triangle(face->vertex(0)->point(), face->vertex(1) ->point(), face->vertex(2)->point()); 
+	Triangle tri=Triangle(Point(face->vertex(0)->point()), Point(face->vertex(1)->point()), Point(face->vertex(2)->point()));
 	double face_area =std::abs(tri.area()); 	
 	
 	return triangle_energy_weights(face,wcirc, Wk, star)/face_area; 

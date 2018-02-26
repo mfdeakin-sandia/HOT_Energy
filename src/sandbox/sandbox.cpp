@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 // check our weighted_circumcenter function works
 	// 1:
 	RegT::Face_handle face_handle=random_RT.finite_faces_begin(); 
-	Triangle tri((face_handle->vertex(0))->point(), (face_handle->vertex(1))->point(), (face_handle->vertex(2))->point()); 
+	Triangle tri(Point((face_handle->vertex(0))->point()), Point((face_handle->vertex(1))->point()), Point((face_handle->vertex(2))->point()));
 
 	double weight[3]={0,0,0};
 
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 	//uniform_rt.insert(weighted_points.begin(), weighted_points.end()); 
 	std::cout << uniform_rt.number_of_vertices() <<std::endl; 
 	RegT::Face_handle face=uniform_rt.finite_faces_begin(); 
-	Triangle tri2((face->vertex(0))->point(), (face->vertex(1))->point(), (face->vertex(2))->point()); 
+	Triangle tri2(Point((face->vertex(0))->point()), Point((face->vertex(1))->point()), Point((face->vertex(2))->point()));
 	
 	std::cout<< "Our code: " << weighted_circumcenter(tri2,weight) <<std::endl; 
 	std::cout <<"CGAL: " << random_RT.weighted_circumcenter(face) <<std::endl; 
