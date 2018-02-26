@@ -32,7 +32,7 @@ std::vector<Point> lloyds_CVT(std::vector<Point> points, int CVT_iterations, dou
 	while(CVT_iterations >0){
 		Voronoi_diagram vd;
 		for(auto point:points){
-			vd.insert(Wpt(point,0));
+			vd.insert(point);
 		}
 		int num_bounded_faces=0;
 		std::vector<Point> centroids_Voronoi_regions; 

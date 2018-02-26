@@ -57,12 +57,12 @@ int main(int argc, char **argv) {
 	while(x_coor<x_max){	
 		y_coor=y_min; 
 		while(y_coor<y_max){		
-		Point freept(x_coor, y_coor); 
+			Point freept(x_coor, y_coor); 
 			int num_intersections=0; 
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -297,7 +297,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -336,7 +336,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -375,7 +375,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -419,7 +419,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -460,7 +460,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -501,7 +501,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
@@ -550,7 +550,7 @@ int main(int argc, char **argv) {
 
 			//check if freept is contained in the hexagon. if not, don't compute energy for that point. move on. 
 			for(int i=0; i<6; i++){		 
-				bool intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
+				auto intersect=intersection(Segment(Point(2,0), freept), boundary_segs[i]);
 				if(intersect)
 					num_intersections+=1; 			
 			}
