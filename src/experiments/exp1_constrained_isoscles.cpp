@@ -1,20 +1,13 @@
+// exp1_constrainted_isoscles.cpp
+
 // Experiment 1: plot or minimize the energy for a triangle that is constrained to be isosceles, with all three vertices on a fixed circle, with two of the vertices moving towards one another and collapsing their shared edge to zero length. Confirm that the energy approaches zero.
 
-
-
-#include <hot.hpp>
-#include <lloyds.hpp>
-#include <ply_writer.hpp>
-#include<Sb.hpp> 
-
-#include <random>
-#include <vector>
 #include <fstream>
 
-#include <CGAL/Kernel/global_functions.h>
-
-
-#define PI 3.14159265
+#include "hot.hpp"
+#include "lloyds.hpp"
+#include "ply_writer.hpp"
+#include "Sb.hpp"
 
 int main(int argc, char **argv) {
 	const int Wk=2; 
@@ -24,7 +17,7 @@ int main(int argc, char **argv) {
 	std::ofstream outputFile;
 ///////////// Exp 1a	
 	//star=0
-	outputFile.open("exp1/HOT/exp1a_constrained_isoscles_star_2_0.txt");
+	outputFile.open("exp1a_HOT_constrained_isoscles_star_2_0.txt");
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
 		Point p_moving2(cos(angle), -sin(angle)); 
@@ -38,7 +31,7 @@ int main(int argc, char **argv) {
 	outputFile.close(); 
 
 	//star=1
-	outputFile.open("exp1/HOT/exp1a_constrained_isoscles_star_2_1.txt");
+	outputFile.open("exp1a_HOT_constrained_isoscles_star_2_1.txt");
 	angle=PI;
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
@@ -51,7 +44,7 @@ int main(int argc, char **argv) {
 	outputFile.close(); 
 
 	//star=2
-	outputFile.open("exp1/HOT/exp1a_constrained_isoscles_star_2_2.txt");
+	outputFile.open("exp1a_HOT_constrained_isoscles_star_2_2.txt");
 	angle=PI; 
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
@@ -67,7 +60,7 @@ int main(int argc, char **argv) {
 ///// ENERGY: HOT/TRIANGLE_AREA^2 ///////////////////////////////////////////
 
 	//star=0
-	outputFile.open("exp1/HOT/exp1b_constrained_isoscles_star_2_0.txt");
+	outputFile.open("exp1b_HOT_constrained_isoscles_star_2_0.txt");
 	angle=PI; 
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
@@ -80,7 +73,7 @@ int main(int argc, char **argv) {
 	outputFile.close(); 
 
 	//star=1
-	outputFile.open("exp1/HOT/exp1b_constrained_isoscles_star_2_1.txt");
+	outputFile.open("exp1b_HOT_constrained_isoscles_star_2_1.txt");
 	angle=PI;
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
@@ -95,7 +88,7 @@ int main(int argc, char **argv) {
 	outputFile.close(); 
 
 	//star=2
-	outputFile.open("exp1/HOT/exp1b_constrained_isoscles_star_2_2.txt");
+	outputFile.open("exp1b_HOT_constrained_isoscles_star_2_2.txt");
 	angle=PI; 
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
@@ -111,7 +104,7 @@ int main(int argc, char **argv) {
 ///// ENERGY: HOT/TRIANGLE_AREA ///////////////////////////////////////////
 
 //star=0
-	outputFile.open("exp1/HOT/exp1c_constrained_isoscles_star_2_0.txt");
+	outputFile.open("exp1c_HOT_constrained_isoscles_star_2_0.txt");
 	angle=PI; 
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
@@ -124,7 +117,7 @@ int main(int argc, char **argv) {
 	outputFile.close(); 
 
 	//star=1
-	outputFile.open("exp1/HOT/exp1c_constrained_isoscles_star_2_1.txt");
+	outputFile.open("exp1c_HOT_constrained_isoscles_star_2_1.txt");
 	angle=PI;
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
@@ -139,7 +132,7 @@ int main(int argc, char **argv) {
 	outputFile.close(); 
 
 	//star=2
-	outputFile.open("exp1/HOT/exp1c_constrained_isoscles_star_2_2.txt");
+	outputFile.open("exp1c_HOT_constrained_isoscles_star_2_2.txt");
 	angle=PI; 
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
@@ -156,7 +149,7 @@ int main(int argc, char **argv) {
 
 	Point circumcenter(0,0); 
 		//pow distance=2,powarea=-1; i.e. ||b-c||^2 *area
-	outputFile.open("exp1/Sb/exp1d_constrained_isoscles.txt");
+	outputFile.open("exp1d_Sb_constrained_isoscles.txt");
 	angle=PI; 
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
@@ -173,7 +166,7 @@ int main(int argc, char **argv) {
 
 /////////Exp 1e
 //pow distance=2,powarea=-1; i.e. ||b-c||^2 /area
-	outputFile.open("exp1/Sb/exp1e_constrained_isoscles.txt");
+	outputFile.open("exp1e_Sb_constrained_isoscles.txt");
 	angle=PI;
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 
@@ -189,7 +182,7 @@ int main(int argc, char **argv) {
 /////////////////Exp 1f
 //////////// Sb/perimeter
 
-outputFile.open("exp1/Sb/exp1f_constrained_isoscles.txt");
+outputFile.open("exp1f_Sb_constrained_isoscles.txt");
 	angle=PI;
 	while(angle >.01){
 		Point p_moving1(cos(angle), sin(angle)); 

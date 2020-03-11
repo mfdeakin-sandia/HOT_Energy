@@ -1,20 +1,15 @@
-#include <hot.hpp>
-#include <Sb.hpp>
-#include <energyWeights.hpp>
-#include <lloyds.hpp>
-#include <ply_writer.hpp>
-//#include <build_triangulation.hpp>
+// sandbox.cpp
 
-#include <random>
-#include <vector>
+#define CGAL_EI
+
+#include "hot.hpp"
+#include "Sb.hpp"
+#include "energyWeights.hpp"
+#include "lloyds.hpp"
+#include "ply_writer.hpp"
+//#include "build_triangulation.hpp"
+
 #include <fstream>
-
-#include <CGAL/Kernel/global_functions.h>
-
-
-#define PI 3.14159265
-
-
 
 int main(int argc, char **argv) {
 	//Check center of mass is working 

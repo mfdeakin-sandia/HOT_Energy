@@ -57,29 +57,31 @@ double triangle_energy_weights(const weighted_Face_handle &face, const Point &wc
 	}
 	
 	
-	for(int i=0; i<3; i++){
-		double weighti=((face->vertex(i))->point()).weight();
-		double weightj=((face->vertex(i+1))->point()).weight();
+	for(int i=0; i<3; i++)
+  {
+    const auto ip1 = (i+1) % 3;
+    const auto ip2 = (i+2) % 3;
+    auto wi = face->vertex(i  )->point();
+    auto wj = face->vertex(ip1)->point();
+    auto wk = face->vertex(ip2)->point();
+    
+		const double weighti=wi.weight();
+		const double weightj=wj.weight();
 	
-		Point xi((face->vertex(i))->point());
-		Point xj((face->vertex(i+1))->point());
-		Point xk((face->vertex(i+2))->point());
-		double length_eij=sqrt(pow(xi.x()-xj.x(),2.0)+pow(xi.y()-xj.y(),2.0));
+    Point xi(wi);
+    Point xj(wj);
+    Point xk(wk);
 
+		const double length_eij=sqrt(pow(xi.x()-xj.x(),2.0)+pow(xi.y()-xj.y(),2.0));
 
-		double dij= (pow(length_eij,2) -weighti+weightj)/(2*length_eij); 
-		double dji= (pow(length_eij,2) -weightj+weighti)/(2*length_eij);
+		const double dij= (pow(length_eij,2) -weighti+weightj)/(2*length_eij);
+		const double dji= (pow(length_eij,2) -weightj+weighti)/(2*length_eij);
 		
-		double unsigned_hk=abs((xj.y()-xi.y())*wcirc.x() - (xj.x()-xi.x())*wcirc.y() +xj.x()*xi.y()-xj.y()*xi.x())/length_eij;
-		double hk; 
-		if(CGAL::orientation(xi,xj,xk)==CGAL::orientation(xi,xj,wcirc))
-			hk=unsigned_hk;
-		else hk=-1.0*unsigned_hk; 
+		const double unsigned_hk=abs((xj.y()-xi.y())*wcirc.x() - (xj.x()-xi.x())*wcirc.y() +xj.x()*xi.y()-xj.y()*xi.x())/length_eij;
+    double hk = (CGAL::orientation(xi,xj,xk)==CGAL::orientation(xi,xj,wcirc) ? unsigned_hk : -1.0*unsigned_hk);
 		
 		energy+=pow(dij,3)*hk/constant1+dij*pow(hk,3)/constant2;
 		energy+=pow(dji,3)*hk/constant1+dji*pow(hk,3)/constant2;
-	
-	
 	}
 	return energy; 
 }

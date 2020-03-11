@@ -1,17 +1,11 @@
-#include <hot.hpp>
-#include <Sb.hpp>
-#include <ply_writer.hpp>
+// exp4_hex_patch.cpp
 
-#include <random>
-#include <vector>
 #include <fstream>
-
-#include <CGAL/Kernel/global_functions.h>
-
 #include <typeinfo>
 
-#define PI 3.14159265
-
+#include "hot.hpp"
+#include "Sb.hpp"
+#include "ply_writer.hpp"
 
 void hex_data_to_file(double x_min, double x_max, double y_min, double y_max, double step, int viewnum);
 
@@ -45,7 +39,7 @@ int main(int argc, char **argv) {
 	std::ofstream outputFile;
 
 	//star 0
-	outputFile.open("exp4/exp4a_hex_patch_star_2_0.txt");
+	outputFile.open("exp4a_hex_patch_star_2_0.txt");
 	double x_min= -1;
 	double y_min=-1; 
 	double x_max=1; 
@@ -88,7 +82,7 @@ int main(int argc, char **argv) {
 	outputFile.close();
 
 	//star 1
-	outputFile.open("exp4/exp4a_hex_patch_star_2_1.txt");
+	outputFile.open("exp4a_hex_patch_star_2_1.txt");
 
 	x_coor=x_min; 
 	y_coor=y_min; 
@@ -126,7 +120,7 @@ int main(int argc, char **argv) {
 	outputFile.close();
 
 //star 2
-	outputFile.open("exp4/exp4a_hex_patch_star_2_2.txt");
+	outputFile.open("exp4a_hex_patch_star_2_2.txt");
 
 	x_coor=x_min; 
 	y_coor=y_min; 
@@ -168,7 +162,7 @@ int main(int argc, char **argv) {
 //////////////////////////////////////////////////
 
 ////star 0
-	outputFile.open("exp4/exp4b_hex_patch_star_2_0.txt");
+	outputFile.open("exp4b_hex_patch_star_2_0.txt");
 	
 	x_coor=x_min; 
 	y_coor=y_min; 
@@ -205,7 +199,7 @@ int main(int argc, char **argv) {
 	}
 	outputFile.close();
 ///star 1
-	outputFile.open("exp4/exp4b_hex_patch_star_2_1.txt");
+	outputFile.open("exp4b_hex_patch_star_2_1.txt");
 	
 	x_coor=x_min; 
 	y_coor=y_min; 
@@ -242,7 +236,7 @@ int main(int argc, char **argv) {
 	}
 	outputFile.close();
 //star 2
-	outputFile.open("exp4/exp4b_hex_patch_star_2_2.txt");
+	outputFile.open("exp4b_hex_patch_star_2_2.txt");
 	
 	x_coor=x_min; 
 	y_coor=y_min; 
@@ -285,7 +279,7 @@ int main(int argc, char **argv) {
 //////////////////////////////////////////////////
 
 //star 0
-	outputFile.open("exp4/exp4c_hex_patch_star_2_0.txt");
+	outputFile.open("exp4c_hex_patch_star_2_0.txt");
 	
 	x_coor=x_min; 
 	y_coor=y_min; 
@@ -324,7 +318,7 @@ int main(int argc, char **argv) {
 
 // star 1
 
-	outputFile.open("exp4/exp4c_hex_patch_star_2_1.txt");
+	outputFile.open("exp4c_hex_patch_star_2_1.txt");
 	
 	x_coor=x_min; 
 	y_coor=y_min; 
@@ -363,7 +357,7 @@ int main(int argc, char **argv) {
 
 //star 2
 
-	outputFile.open("exp4/exp4c_hex_patch_star_2_2.txt");
+	outputFile.open("exp4c_hex_patch_star_2_2.txt");
 	
 	x_coor=x_min; 
 	y_coor=y_min; 
@@ -406,7 +400,7 @@ int main(int argc, char **argv) {
 ////// Exp 4d. Sb /////////////////////////
 //////////////////////////////////////////////////
 
-	outputFile.open("exp4/exp4d_hex_patch.txt");
+	outputFile.open("exp4d_hex_patch.txt");
 	
 	x_coor=x_min; 
 	y_coor=y_min;
@@ -448,7 +442,7 @@ int main(int argc, char **argv) {
 ////// Exp 4e. Sb/area^2 /////////////////////////
 //////////////////////////////////////////////////
 
-	outputFile.open("exp4/exp4e_hex_patch.txt");
+	outputFile.open("exp4e_hex_patch.txt");
 	
 	x_coor=x_min; 
 	y_coor=y_min; 
@@ -489,7 +483,7 @@ int main(int argc, char **argv) {
 ////// Exp 4f. Sb/perim^4 /////////////////////////
 //////////////////////////////////////////////////
 
-	outputFile.open("exp4/exp4f_hex_patch.txt");
+	outputFile.open("exp4f_hex_patch.txt");
 	
 	x_coor=x_min; 
 	y_coor=y_min; 

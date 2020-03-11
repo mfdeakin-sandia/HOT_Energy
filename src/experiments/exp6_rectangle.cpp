@@ -1,15 +1,10 @@
-#include <hot.hpp>
-#include <Sb.hpp>
-#include <ply_writer.hpp>
+// exp6_rectangle.cpp
 
-#include <random>
-#include <vector>
 #include <fstream>
 
-#include <CGAL/Kernel/global_functions.h>
-
-
-#define PI 3.14159265
+#include "hot.hpp"
+#include "Sb.hpp"
+#include "ply_writer.hpp"
 
 int main(int argc, char **argv) {
 	std::ofstream outputFile; 
@@ -35,7 +30,7 @@ int main(int argc, char **argv) {
 		boundary_segs.push_back(Segment(points[i], points[(i+1)%points.size()])); 
 	}
 	//star 0
-	outputFile.open("exp6/exp6a_rectangle_star_0.txt");
+	outputFile.open("exp6a_rectangle_star_0.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -61,7 +56,7 @@ int main(int argc, char **argv) {
 	//star 1
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial; 
-	outputFile.open("exp6/exp6a_rectangle_star_1.txt");
+	outputFile.open("exp6a_rectangle_star_1.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -87,7 +82,7 @@ int main(int argc, char **argv) {
 	//star 2
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial; 
-	outputFile.open("exp6/exp6a_rectangle_star_2.txt");
+	outputFile.open("exp6a_rectangle_star_2.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -119,7 +114,7 @@ int main(int argc, char **argv) {
 	//star 0
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial;
-	outputFile.open("exp6/exp6b_rectangle_star_0.txt");
+	outputFile.open("exp6b_rectangle_star_0.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -145,7 +140,7 @@ int main(int argc, char **argv) {
 	//star 1
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial; 
-	outputFile.open("exp6/exp6b_rectangle_star_1.txt");
+	outputFile.open("exp6b_rectangle_star_1.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -171,7 +166,7 @@ int main(int argc, char **argv) {
 	//star 2
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial; 
-	outputFile.open("exp6/exp6b_rectangle_star_2.txt");
+	outputFile.open("exp6b_rectangle_star_2.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -202,7 +197,7 @@ int main(int argc, char **argv) {
 	//star 0
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial;
-	outputFile.open("exp6/exp6c_rectangle_star_0.txt");
+	outputFile.open("exp6c_rectangle_star_0.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -228,7 +223,7 @@ int main(int argc, char **argv) {
 	//star 1
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial; 
-	outputFile.open("exp6/exp6c_rectangle_star_1.txt");
+	outputFile.open("exp6c_rectangle_star_1.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -254,7 +249,7 @@ int main(int argc, char **argv) {
 	//star 2
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial; 
-	outputFile.open("exp6/exp6c_rectangle_star_2.txt");
+	outputFile.open("exp6c_rectangle_star_2.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -284,7 +279,7 @@ int main(int argc, char **argv) {
 
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial;
-	outputFile.open("exp6/exp6d_rectangle.txt");
+	outputFile.open("exp6d_rectangle.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -312,7 +307,7 @@ int main(int argc, char **argv) {
 
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial;
-	outputFile.open("exp6/exp6e_rectangle.txt");
+	outputFile.open("exp6e_rectangle.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){
@@ -340,7 +335,7 @@ int main(int argc, char **argv) {
 
 	x_coor=x_coor_initial; 
 	y_coor=y_coor_initial;
-	outputFile.open("exp6/exp6f_rectangle.txt");
+	outputFile.open("exp6f_rectangle.txt");
 	while(x_coor<rec_width-step_size){
 		y_coor=.01; 
 		while(y_coor<rec_height-step_size){

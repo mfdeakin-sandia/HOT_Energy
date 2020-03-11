@@ -1,22 +1,15 @@
-#include <hot.hpp>
-
-
-
-#include <random>
-#include <vector>
+// NDTvDT_exp2
 #include <fstream>
 
-#include <CGAL/Kernel/global_functions.h>
+#include "hot.hpp"
 
-
-#define PI 3.14159265
 
 int main(int argc, char **argv) {
 	std::ofstream outputFile; 
 
 
 //star 0	
-	outputFile.open("NDTvDT/NDTvDT_exp2_star0.txt"); 
+	outputFile.open("NDTvDT_exp2_star0.txt"); 
 	double height=1;
 	while( height>0){
 		Triangle DTtri1(Point(-1,0), Point(-1,height), Point(0,-.5));
@@ -43,7 +36,7 @@ int main(int argc, char **argv) {
 
 	//star 1
 	
-	outputFile.open("NDTvDT/NDTvDT_exp2_star1.txt"); 
+	outputFile.open("NDTvDT_exp2_star1.txt");
 	height=1;	
 	while( height>0){
 		Triangle DTtri1(Point(-1,0), Point(-1,height), Point(0,-.5));
@@ -69,7 +62,7 @@ int main(int argc, char **argv) {
 
 	//star 2
 	
-	outputFile.open("NDTvDT/NDTvDT/NDTvDT_exp2_star2.txt"); 
+	outputFile.open("NDTvDT_exp2_star2.txt");
 	height=1;	
 	while( height>0){
 		Triangle DTtri1(Point(-1,0), Point(-1,height), Point(0,-.5));

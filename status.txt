@@ -1,0 +1,23 @@
+# status of executables
+# x won't compile
+# - runs with error
+# o runs, unknown whether it is working
+# + appears working
+# 
++ energy*
++ tester*
++ lloydsCVT* runs forever
++ draw_voronoi*
++ wassertest*
++ sandbox* 
++ exp1_constrained_isoscles* 
++ exp2_vertex_to_fixed_edge*
++ exp3_collapse_no_large_angles*
++ exp4_hex_patch*
++ exp5_horseV*
++ exp5_horseV_DT* (cgal precondition runtime error if using Cartesian)
++ exp6_rectangle*
++ NDTvDT_exp1*
++ NDTvDT_exp2*
++ NDTvDT_exp3*
+

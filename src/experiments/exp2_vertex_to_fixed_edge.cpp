@@ -1,15 +1,11 @@
-#include <hot.hpp>
-#include <Sb.hpp>
-#include <ply_writer.hpp>
+// exp2_vertex_to_fixed_edge.cpp
 
-#include <random>
-#include <vector>
 #include <fstream>
 
-#include <CGAL/Kernel/global_functions.h>
+#include "hot.hpp"
+#include "Sb.hpp"
+#include "ply_writer.hpp"
 
-
-#define PI 3.14159265
 
 int main(int argc, char **argv) {
 /*
@@ -60,7 +56,7 @@ int main(int argc, char **argv) {
 /////////////Exp 2a
 	
 	////////star^0
-	outputFile.open("exp2/exp2a_vertex_to_fixed_edge_2_0.txt"); 
+	outputFile.open("exp2a_vertex_to_fixed_edge_2_0.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -83,7 +79,7 @@ int main(int argc, char **argv) {
 
 	
 	////////star^1
-	outputFile.open("exp2/exp2a_vertex_to_fixed_edge_2_1.txt"); 
+	outputFile.open("exp2a_vertex_to_fixed_edge_2_1.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -106,7 +102,7 @@ int main(int argc, char **argv) {
 	free_x_coor=-2;
 	free_y_coor=y_coor_start;
 
-	outputFile.open("exp2/exp2a_vertex_to_fixed_edge_2_2.txt"); 
+	outputFile.open("exp2a_vertex_to_fixed_edge_2_2.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -128,7 +124,7 @@ int main(int argc, char **argv) {
 	free_x_coor=-2;
 	free_y_coor=y_coor_start;
 	////////star^0
-	outputFile.open("exp2/exp2b_vertex_to_fixed_edge_2_0.txt"); 
+	outputFile.open("exp2b_vertex_to_fixed_edge_2_0.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -151,7 +147,7 @@ int main(int argc, char **argv) {
 
 	
 	////////star^1
-	outputFile.open("exp2/exp2b_vertex_to_fixed_edge_2_1.txt"); 
+	outputFile.open("exp2b_vertex_to_fixed_edge_2_1.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -175,7 +171,7 @@ int main(int argc, char **argv) {
 	free_y_coor=y_coor_start;
 
 
-	outputFile.open("exp2/exp2b_vertex_to_fixed_edge_2_2.txt"); 
+	outputFile.open("exp2b_vertex_to_fixed_edge_2_2.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -197,7 +193,7 @@ int main(int argc, char **argv) {
 	free_y_coor=y_coor_start;
 
 	////////star^0
-	outputFile.open("exp2/exp2c_vertex_to_fixed_edge_2_0.txt"); 
+	outputFile.open("exp2c_vertex_to_fixed_edge_2_0.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -221,7 +217,7 @@ int main(int argc, char **argv) {
 
 	
 	////////star^1
-	outputFile.open("exp2/exp2c_vertex_to_fixed_edge_2_1.txt"); 
+	outputFile.open("exp2c_vertex_to_fixed_edge_2_1.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -245,7 +241,7 @@ int main(int argc, char **argv) {
 	free_y_coor=y_coor_start;
 
 
-	outputFile.open("exp2/exp2c_vertex_to_fixed_edge_2_2.txt"); 
+	outputFile.open("exp2c_vertex_to_fixed_edge_2_2.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -269,7 +265,7 @@ int main(int argc, char **argv) {
 	free_y_coor=y_coor_start;
 
 
-	outputFile.open("exp2/exp2d_vertex_to_fixed_edge.txt"); 
+	outputFile.open("exp2d_vertex_to_fixed_edge.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -294,7 +290,7 @@ int main(int argc, char **argv) {
 	free_y_coor=y_coor_start;
 
 
-	outputFile.open("exp2/exp2e_vertex_to_fixed_edge.txt"); 
+	outputFile.open("exp2e_vertex_to_fixed_edge.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	
@@ -326,10 +322,13 @@ int main(int argc, char **argv) {
 
 			free_y_coor-=step; 
 		}
-double equal_weights[3]={0,0,0}; 
-Triangle sample_tri(Point (0,0), Point(1,0), Point(1,.25)); 
-Point circ=weighted_circumcenter(sample_tri, equal_weights);
-std::cout <<circ.x() << ", " << circ.y() <<std::endl; 
+  
+  {
+    double equal_weights[3]={0,0,0};
+    Triangle sample_tri(Point (0,0), Point(1,0), Point(1,.25));
+    Point circ=weighted_circumcenter(sample_tri, equal_weights);
+    std::cout <<circ.x() << ", " << circ.y() <<std::endl;
+  }
 
 
 //////////////////////////// Exp 1f ////////////////
@@ -338,7 +337,7 @@ std::cout <<circ.x() << ", " << circ.y() <<std::endl;
 	free_y_coor=y_coor_start;
 
 
-	outputFile.open("exp2/exp2f_vertex_to_fixed_edge.txt"); 
+	outputFile.open("exp2f_vertex_to_fixed_edge.txt"); 
 	while(free_x_coor<2){
 		free_y_coor=y_coor_start; 
 		while(free_y_coor <2){	

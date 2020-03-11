@@ -1,14 +1,9 @@
-#include <hot.hpp>
-#include <ply_writer.hpp>
+// exp7_vertex_to_fixed_edge_correctedformulas.cpp
 
-#include <random>
-#include <vector>
 #include <fstream>
 
-#include <CGAL/Kernel/global_functions.h>
-
-
-#define PI 3.14159265
+#include "hot.hpp"
+#include "ply_writer.hpp"
 
 int main(int argc, char **argv) {
 	

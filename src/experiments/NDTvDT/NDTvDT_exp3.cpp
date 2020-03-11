@@ -1,15 +1,8 @@
-#include <hot.hpp>
+// NDTvDT_exp3.cpp
 
-
-
-#include <random>
-#include <vector>
 #include <fstream>
 
-#include <CGAL/Kernel/global_functions.h>
-
-
-#define PI 3.14159265
+#include "hot.hpp"
 
 double compute_cot(Triangle tri, int vertex_index); 
 
@@ -73,26 +66,42 @@ int main(int argc, char **argv) {
 
 					double DTenergy=energy_density_TMethod<2,1>(dt);
 					double NDTenergy=0; 
-					for(auto ei=dt.finite_edges_begin();ei!=dt.finite_edges_end(); ei++){
-
+					for(auto ei=dt.finite_edges_begin();ei!=dt.finite_edges_end(); ei++)
+          {
 						// check if ei is a boundary edge
-						if(!(dt.is_infinite(ei->first) || dt.is_infinite((ei->first)->neighbor(ei->second)))){
+						if(!(dt.is_infinite(ei->first) || dt.is_infinite((ei->first)->neighbor(ei->second))))
+            {
+              // get both triangles of e1
 							Face face1=*(ei->first);
 							int index1=ei->second; 
 							
 							Edge mirror_ei=dt.mirror_edge(*ei);
-							Face face2=*(mirror_ei.first);  
+							Face face2=*(mirror_ei.first);
 							int index2=mirror_ei.second;
 
-							Triangle tri1(face1.vertex(index1)->point(), face1.vertex(index1+1)->point(), face2.vertex(index2)->point()); 
-							Triangle tri2(face1.vertex(index1)->point(), face1.vertex(index1+2)->point(), face2.vertex(index2)->point()); 
+              // order points
+              const int index1p1 = (index1 + 1) % 3;
+              const int index1p2 = (index1 + 2) % 3;
+              
+              auto &p1 = face1.vertex(index1)->point();
+              auto &p2 = face1.vertex(index1p1)->point();
+              auto &p3 = face1.vertex(index1p2)->point();
+              auto &p4 = face2.vertex(index2)->point();
+              
+              // DT is tri(p1,p2,p3) and tri(p4,p3,p2)
+              // p2,p3 is the shared edge
+              
+              // create triangles with the diagonal flipped
+              // tri 124, tri 143
+              Triangle tri1(p1, p2, p4);
+              Triangle tri2(p1, p4, p3);
+              
 							NDTenergy=tri_energy<2,1>(tri1)+tri_energy<2,1>(tri2); 	
 							
 							cot1=compute_cot(tri1,1); 
 
 							cot2=compute_cot(tri2,1);  
 						}
-
 					}
 					
 					
@@ -152,7 +161,7 @@ int main(int argc, char **argv) {
 	double percent=num_DTgreaterNDT/total_experiments;
 	std::cout<< "(#DT>NDT)/#exp = " << percent<<std::endl; 
 	std::cout <<"#DT>NDT, 2 faces/# exp with 2 faces= " << num_DTgreaterNDT/num_exp_2_faces<<std::endl; 
-return 0; 
+  return 0; 
 }
 
 double compute_cot(Triangle tri, int vertex_index){

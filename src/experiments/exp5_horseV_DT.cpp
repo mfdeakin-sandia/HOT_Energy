@@ -1,19 +1,14 @@
-#include <hot.hpp>
-#include <Sb.hpp>
-#include <ply_writer.hpp>
-
-#include <random>
-#include <vector>
+// exp5_horseV_DT.cpp
 #include <fstream>
 
-#include <CGAL/Kernel/global_functions.h>
+// use exact predicates
+// if using Cartesian, then can get a crash with freepoint being outside domain inconsistency
+#define CGAL_EI
 
-//#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-//#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include "hot.hpp"
 
-//using EK=CGAL::Exact_predicates_exact_constructions_kernel; 
-
-#define PI 3.14159265
+#include "Sb.hpp"
+#include "ply_writer.hpp"
 
 int main(int argc, char **argv) {
 	std::ofstream outputFile; 
@@ -32,7 +27,7 @@ int main(int argc, char **argv) {
 ///////////////////// Exp 5a: HOT ///////////////////////////////
 /////////////////////////////////////////////////////////////
 	//star 0
-	outputFile.open("exp5/exp5a_horseV_DT_star_2_1.txt"); 
+	outputFile.open("exp5a_horseV_DT_star_2_1.txt"); 
 		y_coor=fig_height/2; 
 		while(y_coor<fig_height){
 			Point freept(0, y_coor); 
@@ -72,7 +67,7 @@ int main(int argc, char **argv) {
 	
 	outputFile.close(); 
 //varry horizontal coordinate
-		outputFile.open("exp5/exp5a_horseV_DT_star_2_1_hor.txt"); 
+		outputFile.open("exp5a_horseV_DT_star_2_1_hor.txt"); 
 		step_size=.01;
 		y_coor=6;
 		x_coor= -.25; 
@@ -115,7 +110,7 @@ int main(int argc, char **argv) {
 	outputFile.close(); 
 
 // as vertex is moved, update to DT
-	outputFile.open("exp5/exp5a_horseV_DTmesh_star_2_1.txt"); 
+	outputFile.open("exp5a_horseV_DTmesh_star_2_1.txt"); 
 	Point boundary_pts[]={Point(-fig_width/2,0),Point(fig_width/2,0), Point(0,fig_height)};	
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;

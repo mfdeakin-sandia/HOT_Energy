@@ -1,39 +1,5 @@
-
-#include <CGAL/Cartesian.h>
-#include <CGAL/Delaunay_triangulation_2.h>
-#include <CGAL/Root_of_traits.h>
-#include <CGAL/number_utils.h>
-
-#include <boost/variant/variant.hpp>
-
-#include <algorithm>
-#include <array>
-#include <cmath>
-
-#include <polynomial.hpp>
-
-constexpr const int dims = 2;
-
-using K = CGAL::Cartesian<double>;
-// real type underlying K
-using K_real = K::RT;
-
-using DT = CGAL::Delaunay_triangulation_2<K>;
-using Face = DT::Face;
-using Point = DT::Point;
-using Vertex = DT::Vertex;
-
-using Triangle = CGAL::Triangle_2<K>;
-using Line = CGAL::Line_2<K>;
-using Segment = CGAL::Segment_2<K>;
-using Vector = CGAL::Vector_2<K>;
-using Direction = CGAL::Direction_2<K>;
-
-constexpr const int tri_verts = 3;
-constexpr const int tri_edges = 3;
-
-#include <map>
-#include <list>
+// ply_writer.cpp
+#include "ply_writer.hpp"
 
 #include <iostream>
 #include <fstream>

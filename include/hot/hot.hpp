@@ -1,27 +1,10 @@
-
+// hot.hpp
 #ifndef _HOT_HPP_
 #define _HOT_HPP_
 
-#include <energyNOweights.hpp> 
-
-
-#include <CGAL/Cartesian.h>
-#include <CGAL/Delaunay_triangulation_2.h>
-#include <CGAL/Root_of_traits.h>
-#include <CGAL/number_utils.h>
-#include <CGAL/Triangulation_2.h>
-#include <CGAL/Regular_triangulation_2.h>
-#include <CGAL/Voronoi_diagram_2.h>
-#include <CGAL/Delaunay_triangulation_adaptation_traits_2.h>
-#include <CGAL/Delaunay_triangulation_adaptation_policies_2.h>
-#include <CGAL/Polygon_2_algorithms.h>
-#include <CGAL/Arrangement_2.h> // for dealing with half edges 
-
-#include <boost/variant/variant.hpp>
-
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-//#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-
+#define _USE_MATH_DEFINES
+#include <cmath>
+#define PI M_PI
 
 #include <algorithm>
 #include <array>
@@ -32,64 +15,13 @@
 #include <functional>
 #include <random>
 
-#include <polynomial.hpp>
+
+#include "cgal-kernel.h"
+
+#include "energyNOweights.hpp"
+#include "polynomial.hpp"
 
 constexpr const int dims = 2;
-
-using K = CGAL::Cartesian<double>;
-// real type underlying K
-using K_real = K::RT;
-
-using EK=CGAL::Exact_predicates_exact_constructions_kernel; // need for point_outside_domain to tell if point is on the boundary
-using EK_real=EK::RT; 
-
-//using CK=CGAL::Exact_predicates_inexact_constructions_kernel;
-
-// Newer versions of CGAL define Weighted_point inside of all kernels
-// but before that we have to use RegularTriangulationTraits_2 implementations
-// Note I'm not certain which version this starts at;
-// but it's between 4.9.0 and 4.11.0, so adjust this check as needed
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4, 9, 0)
-
-using DT = CGAL::Delaunay_triangulation_2<K>;
-using RegT=CGAL::Regular_triangulation_2<K>;
-
-#else
-
-#include <CGAL/Regular_triangulation_euclidean_traits_2.h>
-
-using TriTraits = CGAL::Regular_triangulation_euclidean_traits_2<K>;
-using DT = CGAL::Delaunay_triangulation_2<TriTraits>;
-using RegT=CGAL::Regular_triangulation_2<TriTraits>;
-
-#endif // CGAL_VERSION_NR
-
-using Face = DT::Face;
-using Point = DT::Point;
-using Vertex = DT::Vertex;
-using midpoint=CGAL::Point_2<K>;
-using Face_handle=DT::Face_handle;
-using Vertex_handle=DT::Vertex_handle;
-using Edge_circulator=DT::Edge_circulator; 
-using Vertex_iterator=DT::Vertex_iterator;
-using Edge=DT::Edge;
-using Wpt=RegT::Weighted_point;
-
-
-using AT=CGAL::Delaunay_triangulation_adaptation_traits_2<DT>;
-using AP=CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<DT>;
-using Voronoi_diagram=CGAL::Voronoi_diagram_2<DT,AT,AP>;  
-
-//for weighted triangulations
-
-using weighted_Face_handle=RegT::Face_handle; 
-
-
-using Triangle = CGAL::Triangle_2<K>;
-using Line = CGAL::Line_2<K>;
-using Segment = CGAL::Segment_2<K>;
-using Vector = CGAL::Vector_2<K>;
-using Direction = CGAL::Direction_2<K>;
 
 constexpr const int tri_verts = 3;
 constexpr const int tri_edges = 3;
@@ -271,6 +203,7 @@ K_real compute_incident_energies(const DT &dt, DT::Vertex_handle vtx) {
   return energy;
 }
 
+inline
 K_real choose_distance_scale(DT &dt, std::vector<finite_diffs> diffs) {
   // TODO: Implement something real here
   return 1.0;
@@ -327,10 +260,9 @@ template <int k> DT hot_optimize(DT dt, K_real min_delta_energy = 0.1) {
 }
 
 
-
 ///////// check if point is in a polygon ////////
 
-
+inline
 bool point_outside_domain(Point pt, Point *pgn_begin, Point *pgn_end, K traits){
 
 	switch(CGAL::bounded_side_2(pgn_begin, pgn_end, pt, traits)){
@@ -343,10 +275,80 @@ bool point_outside_domain(Point pt, Point *pgn_begin, Point *pgn_end, K traits){
 	}
 }
 
+inline
+void order_points(std::array<Point, tri_verts> &verts) {
+  if (verts[0][0] > verts[1][0]) {
+    std::swap(verts[0], verts[1]);
+  }
+  if (verts[1][0] > verts[2][0]) {
+    std::swap(verts[2], verts[1]);
+    if (verts[0][0] > verts[1][0]) {
+      std::swap(verts[0], verts[1]);
+    }
+  }
+}
 
+/* Computes 1 or 2 triangles which can be used for the
+ * piecewise integral of the Wasserstein distance with
+ * k */
+boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1> >
+integral_bounds(const Triangle &face) {
+  std::array<Point, tri_verts> verts = { face.vertex(0), face.vertex(1),
+    face.vertex(2) };
+  order_points(verts);
+  if (verts[0][0] == verts[1][0] || verts[1][0] == verts[2][0]) {
+    // Return a single triangle in this case
+    std::array<Triangle, 1> bounds;
+    bounds[0] = Triangle(verts[0], verts[1], verts[2]);
+    return boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1> >(
+                                                                             bounds);
+  } else {
+    const Line vertical(verts[1], verts[1] + Vector(0, 1));
+    const Line base(verts[0], verts[2]);
+    // This intersection will exist for all non-degenerate
+    // triangles
+    auto int_vert = CGAL::intersection(vertical, base);
+    assert(int_vert.is_initialized());
+    
+    std::array<Triangle, 2> bounds;
+    bounds[0] = Triangle(verts[0], verts[1], boost::get<Point>(int_vert.get()));
+    bounds[1] = Triangle(verts[2], verts[1], boost::get<Point>(int_vert.get()));
+    return boost::variant<std::array<Triangle, 2>, std::array<Triangle, 1> >(
+                                                                             bounds);
+  }
+}
 
+inline
+Triangle face_to_tri(const Face &face) {
+  return Triangle(face.vertex(0)->point(), face.vertex(1)->point(),
+                  face.vertex(2)->point());
+}
 
+inline
+Point triangle_circumcenter(const Triangle &face) {
+  return CGAL::circumcenter(face.vertex(0), face.vertex(1), face.vertex(2));
+}
 
+inline
+std::list<DT::Vertex_handle> internal_vertices(const DT &dt) {
+  std::list<DT::Vertex_handle> verts;
+  std::set<DT::Vertex_handle> seen;
+  // First mark the external vertices as having been seen
+  for (auto vert_itr = dt.incident_vertices(dt.infinite_vertex());
+       seen.count(vert_itr) == 0; vert_itr++) {
+    seen.insert(vert_itr);
+  }
+  // Now iterator over all of the vertices,
+  // storing them if we haven't seen them before
+  for (auto vert_itr = dt.finite_vertices_begin();
+       vert_itr != dt.finite_vertices_end(); vert_itr++) {
+    if (seen.count(vert_itr) == 0) {
+      seen.insert(vert_itr);
+      verts.push_back(vert_itr);
+    }
+  }
+  return verts;
+}
 
 #endif // _HOT_HPP_
 

@@ -1,18 +1,11 @@
-
-#include <hot.hpp>
-#include <analytic_HOT_energy_Derv.hpp>
-#include <energyNOweights.hpp>
-#include <ply_writer.hpp>
-//#include <build_triangulation.hpp>
-
-#include <random>
-#include <vector>
+// energy.cpp
 #include <fstream>
 
-#include <CGAL/Kernel/global_functions.h>
-
-
-#define PI 3.14159265
+#include "hot.hpp"
+#include "analytic_HOT_energy_Derv.hpp"
+#include "energyNOweights.hpp"
+#include "ply_writer.hpp"
+//#include <build_triangulation.hpp>
 
 void test_tri_w2() {
   Triangle tri(Point(2, 1), Point(3, 1), Point(2, 2));

@@ -1,22 +1,15 @@
-#include <hot.hpp>
+// NDTvDT_exp1.cpp
 
+#include "hot.hpp"
 
-
-#include <random>
-#include <vector>
 #include <fstream>
-
-#include <CGAL/Kernel/global_functions.h>
-
-
-#define PI 3.14159265
 
 int main(int argc, char **argv) {
 // Make some non-DT triangles, compare to DT
 
 	std::ofstream outputFile; 
 	
-	outputFile.open("NDTvDT/NDTvDT_exp1_star0.txt"); 
+	outputFile.open("NDTvDT_exp1_star0.txt");
 
 	double height=1;
 
@@ -47,7 +40,7 @@ int main(int argc, char **argv) {
 
 
 	//star 1
-	outputFile.open("NDTvDT/NDTvDT_exp1_star1.txt"); 
+	outputFile.open("NDTvDT_exp1_star1.txt");
 	height=1;
 	while( height>0){
 		Triangle DTtri1(Point(-1,0), Point(0,-1), Point(0,height));
@@ -76,7 +69,7 @@ int main(int argc, char **argv) {
 
 	
 	//star 2
-	outputFile.open("NDTvDT/NDTvDT_exp1_star2.txt"); 
+	outputFile.open("NDTvDT_exp1_star2.txt");
 	height=1;
 	while( height>0){
 		

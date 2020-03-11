@@ -1,18 +1,15 @@
 
 #include <cmath>
 #include <limits>
-
 #include <algorithm>
-
 #include <random>
 
 #include <iomanip>
 #include <iostream>
 
-#include <array.hpp>
-#include <hot.hpp>
-
-#include <ply_writer.hpp>
+#include "array.hpp"
+#include "hot.hpp"
+#include "ply_writer.hpp"
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"

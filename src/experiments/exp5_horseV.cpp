@@ -1,19 +1,9 @@
-#include <hot.hpp>
-#include <Sb.hpp>
-#include <ply_writer.hpp>
-
-#include <random>
-#include <vector>
+//exp5_horseV.cpp
 #include <fstream>
 
-#include <CGAL/Kernel/global_functions.h>
-
-//#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-//#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-
-//using EK=CGAL::Exact_predicates_exact_constructions_kernel; 
-
-#define PI 3.14159265
+#include "hot.hpp"
+#include "Sb.hpp"
+#include "ply_writer.hpp"
 
 int main(int argc, char **argv) {
 	std::ofstream outputFile; 
@@ -46,7 +36,7 @@ int main(int argc, char **argv) {
 ///////////////////// Exp 5a: HOT ///////////////////////////////
 /////////////////////////////////////////////////////////////
 	//star 0
-	outputFile.open("exp5/exp5a_horseV_star_2_0.txt"); 
+	outputFile.open("exp5a_horseV_star_2_0.txt");
 	while(x_coor< fig_width/2-.01){
 		y_coor=.01;
 		//y_coor_d=.01; 
@@ -80,7 +70,7 @@ int main(int argc, char **argv) {
 
 // star 1
 
-	outputFile.open("exp5/exp5a_horseV_star_2_1.txt"); 
+	outputFile.open("exp5a_horseV_star_2_1.txt");
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){
@@ -111,7 +101,7 @@ int main(int argc, char **argv) {
 
 // star 2
 
-	outputFile.open("exp5/exp5a_horseV_star_2_2.txt"); 
+	outputFile.open("exp5a_horseV_star_2_2.txt");
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){
@@ -146,7 +136,7 @@ int main(int argc, char **argv) {
 //////////////////////////////////////////////////////
 
 	//star 0
-	outputFile.open("exp5/exp5b_horseV_star_2_0.txt"); 
+	outputFile.open("exp5b_horseV_star_2_0.txt");
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){
@@ -178,7 +168,7 @@ int main(int argc, char **argv) {
 
 // star 1
 
-	outputFile.open("exp5/exp5b_horseV_star_2_1.txt"); 
+	outputFile.open("exp5b_horseV_star_2_1.txt");
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){
@@ -209,7 +199,7 @@ int main(int argc, char **argv) {
 
 // star 2
 
-	outputFile.open("exp5/exp5b_horseV_star_2_2.txt"); 
+	outputFile.open("exp5b_horseV_star_2_2.txt"); 
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){
@@ -244,7 +234,7 @@ int main(int argc, char **argv) {
 //////////////////////////////////////////////////////
 
 	//star 0
-	outputFile.open("exp5/exp5c_horseV_star_2_0.txt"); 
+	outputFile.open("exp5c_horseV_star_2_0.txt"); 
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){
@@ -276,7 +266,7 @@ int main(int argc, char **argv) {
 
 // star 1
 
-	outputFile.open("exp5/exp5c_horseV_star_2_1.txt"); 
+	outputFile.open("exp5c_horseV_star_2_1.txt"); 
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){
@@ -307,7 +297,7 @@ int main(int argc, char **argv) {
 
 // star 2
 
-	outputFile.open("exp5/exp5c_horseV_star_2_2.txt"); 
+	outputFile.open("exp5c_horseV_star_2_2.txt"); 
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){
@@ -341,7 +331,7 @@ int main(int argc, char **argv) {
 //////////////////////////////////////////////////////
 	double zero_weights[]={0,0,0};
 	
-	outputFile.open("exp5/exp5d_horseV.txt"); 
+	outputFile.open("exp5d_horseV.txt"); 
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){
@@ -374,7 +364,7 @@ int main(int argc, char **argv) {
 //////////////////////  Exp 5e  Sb/area^2 //////////////
 //////////////////////////////////////////////////////
 	
-	outputFile.open("exp5/exp5e_horseV.txt"); 
+	outputFile.open("exp5e_horseV.txt"); 
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){
@@ -407,7 +397,7 @@ int main(int argc, char **argv) {
 //////////////////////  Exp 5f  Sb/perim^4 //////////////
 //////////////////////////////////////////////////////
 	
-	outputFile.open("exp5/exp5f_horseV.txt"); 
+	outputFile.open("exp5f_horseV.txt"); 
 	x_coor= -fig_width/2+.01;
 	y_coor= .01;
 	while(x_coor< fig_width/2-.01){

@@ -1,19 +1,10 @@
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Delaunay_triangulation_2.h>
-#include <iterator>
-#include <CGAL/Regular_triangulation_2.h>
-#include <hot.hpp>
-#include <fstream>
-//typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef K::Point_2 Point_2;
-typedef K::Iso_rectangle_2 Iso_rectangle_2;
-typedef K::Segment_2 Segment_2;
-typedef K::Ray_2 Ray_2;
-typedef K::Line_2 Line_2;
-typedef CGAL::Delaunay_triangulation_2<K>  Delaunay_triangulation_2;
-typedef CGAL::Regular_triangulation_2<K>  Regular_triangulation_2;
+// draw_voronoi.cpp
 
-typedef Regular_triangulation_2::Weighted_point Weightpt;
+#include <fstream>
+#include <iterator>
+
+#include "hot.hpp"
+
 //A class to recover Voronoi diagram from stream.
 //Rays, lines and segments are cropped to a rectangle
 //so that only segments are stored
@@ -34,6 +25,8 @@ struct Cropped_voronoi_from_delaunay{
   void operator<<(const Line_2& line)  { crop_and_extract_segment(line); }
   void operator<<(const Segment_2& seg){ crop_and_extract_segment(seg); }
 };
+
+
 int main(){
   //consider some points
   //std::vector<Point_2> points;

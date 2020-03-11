@@ -1,12 +1,10 @@
-#include <hot.hpp>
-#include <Sb.hpp>
-#include <ply_writer.hpp>
+// exp3_collapse_no_large_angles.cpp
 
-#include <random>
-#include <vector>
 #include <fstream>
 
-#include <CGAL/Kernel/global_functions.h>
+#include "hot.hpp"
+#include "Sb.hpp"
+#include "ply_writer.hpp"
 
 
 // ****USING INCORRECT FORMULAS **********
@@ -27,7 +25,7 @@ int main(int argc, char **argv) {
 
 //////////star 0
 	double half_length=half_length_initial; 
-	outputFile.open("exp3/exp3a_collapse_no_large_angles_2_0.txt"); 
+	outputFile.open("exp3a_collapse_no_large_angles_2_0.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -56,7 +54,7 @@ int main(int argc, char **argv) {
 
 //////star 1
 	half_length=half_length_initial; 
-	outputFile.open("exp3/exp3a_collapse_no_large_angles_2_1.txt"); 
+	outputFile.open("exp3a_collapse_no_large_angles_2_1.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -85,7 +83,7 @@ int main(int argc, char **argv) {
  
 //////star 2
 	half_length=1.9; 
-	outputFile.open("exp3/exp3a_collapse_no_large_angles_2_2.txt"); 
+	outputFile.open("exp3a_collapse_no_large_angles_2_2.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -119,7 +117,7 @@ int main(int argc, char **argv) {
 
 //////////star 0
 	half_length=half_length_initial; 
-	outputFile.open("exp3/exp3b_collapse_no_large_angles_2_0.txt"); 
+	outputFile.open("exp3b_collapse_no_large_angles_2_0.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -148,7 +146,7 @@ int main(int argc, char **argv) {
 
 //////star 1
 	half_length=half_length_initial; 
-	outputFile.open("exp3/exp3b_collapse_no_large_angles_2_1.txt"); 
+	outputFile.open("exp3b_collapse_no_large_angles_2_1.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -177,7 +175,7 @@ int main(int argc, char **argv) {
  
 //////star 2
 	half_length=half_length_initial; 
-	outputFile.open("exp3/exp3b_collapse_no_large_angles_2_2.txt"); 
+	outputFile.open("exp3b_collapse_no_large_angles_2_2.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -211,7 +209,7 @@ int main(int argc, char **argv) {
 
 //////////star 0
 	half_length=half_length_initial; 
-	outputFile.open("exp3/exp3c_collapse_no_large_angles_2_0.txt"); 
+	outputFile.open("exp3c_collapse_no_large_angles_2_0.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -240,7 +238,7 @@ int main(int argc, char **argv) {
 
 //////star 1
 	half_length=half_length_initial; 
-	outputFile.open("exp3/exp3c_collapse_no_large_angles_2_1.txt"); 
+	outputFile.open("exp3c_collapse_no_large_angles_2_1.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -269,7 +267,7 @@ int main(int argc, char **argv) {
  
 //////star 2
 	half_length=half_length_initial; 
-	outputFile.open("exp3/exp3c_collapse_no_large_angles_2_2.txt"); 
+	outputFile.open("exp3c_collapse_no_large_angles_2_2.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -300,7 +298,7 @@ int main(int argc, char **argv) {
 ////////////////// Exp 3d Energy=Sb	
 //////////////////////////////////////////////
 	half_length=half_length_initial; 
-	outputFile.open("exp3/exp3d_collapse_no_large_angles.txt"); 
+	outputFile.open("exp3d_collapse_no_large_angles.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -332,7 +330,7 @@ int main(int argc, char **argv) {
 ////////////////// Exp 3e Energy=Sb/area^2
 //////////////////////////////////////////////
 	half_length=half_length_initial; 
-	outputFile.open("exp3/exp3e_collapse_no_large_angles.txt"); 
+	outputFile.open("exp3e_collapse_no_large_angles.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 
@@ -364,7 +362,7 @@ int main(int argc, char **argv) {
 ////////////////// Exp 3f Energy=Sb/perim^4
 //////////////////////////////////////////////
 	half_length=half_length_initial; 
-	outputFile.open("exp3/exp3f_collapse_no_large_angles.txt"); 
+	outputFile.open("exp3f_collapse_no_large_angles.txt"); 
 	while(half_length >.01){
 
 		Point inner_right_pt(half_length, 0); 

@@ -3,7 +3,6 @@
 
 #include <hot.hpp>
 
-
 #include <CGAL/Cartesian.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Root_of_traits.h>
@@ -32,63 +31,6 @@
 
 #include <polynomial.hpp>
 
-using K = CGAL::Cartesian<double>;
-// real type underlying K
-using K_real = K::RT;
-
-using EK=CGAL::Exact_predicates_exact_constructions_kernel; // need for point_outside_domain to tell if point is on the boundary
-using EK_real=EK::RT; 
-
-//using CK=CGAL::Exact_predicates_inexact_constructions_kernel;
-
-// Newer versions of CGAL define Weighted_point inside of all kernels
-// but before that we have to use RegularTriangulationTraits_2 implementations
-// Note I'm not certain which version this starts at;
-// but it's between 4.9.0 and 4.11.0, so adjust this check as needed
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4, 9, 0)
-
-using DT = CGAL::Delaunay_triangulation_2<K>;
-using RegT=CGAL::Regular_triangulation_2<K>;
-
-#else
-
-#include <CGAL/Regular_triangulation_euclidean_traits_2.h>
-
-using TriTraits = CGAL::Regular_triangulation_euclidean_traits_2<K>;
-using DT = CGAL::Delaunay_triangulation_2<TriTraits>;
-using RegT=CGAL::Regular_triangulation_2<TriTraits>;
-
-#endif // CGAL_VERSION_NR
-
-using Face = DT::Face;
-using Point = DT::Point;
-using Vertex = DT::Vertex;
-using midpoint=CGAL::Point_2<K>;
-using Face_handle=DT::Face_handle;
-using Vertex_handle=DT::Vertex_handle;
-using Edge_circulator=DT::Edge_circulator; 
-using Vertex_iterator=DT::Vertex_iterator;
-using Edge=DT::Edge;
-using Wpt=RegT::Weighted_point;
-
-
-using AT=CGAL::Delaunay_triangulation_adaptation_traits_2<DT>;
-using AP=CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<DT>;
-using Voronoi_diagram=CGAL::Voronoi_diagram_2<DT,AT,AP>;  
-
-//for weighted triangulations
-
-using weighted_Face_handle=RegT::Face_handle; 
-
-
-using Triangle = CGAL::Triangle_2<K>;
-using Line = CGAL::Line_2<K>;
-using Segment = CGAL::Segment_2<K>;
-using Vector = CGAL::Vector_2<K>;
-using Direction = CGAL::Direction_2<K>;
-
-
-
 int sgn(double number);
 Triangle face_to_tri(const Face &face);
 
@@ -97,6 +39,7 @@ double Edge_Energy(const Triangle &tri1, int index1, const Triangle &tri2, int i
 
 
 // This computes h_(vertex_index) 
+inline
 double signed_dist_circumcenters(const Triangle &tri, int vertex_index){
 	Point point0=tri.vertex(vertex_index);
 	Point point1_opp=tri.vertex(vertex_index+1);
@@ -230,7 +173,7 @@ double Edge_Energy(const Triangle &tri1, int index1, const Triangle &tri2, int i
 
 }
 
-
+inline
 int sgn(double number){
 	if(number > 0) return 1;
 		else return -1;
