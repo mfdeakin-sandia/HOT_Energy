@@ -307,3 +307,142 @@ TEST_CASE("Two Point Mesh Gradient Descent", "[HOT]") {
     REQUIRE(std::abs(f_diffs[1].center * 6.0 - 1.0) <= max_rel_error);
   }
 }
+
+TEST_CASE("HOT_fig1", "[HOT]")
+{
+  
+  // read file
+  
+  // directory path?
+  std::string epath;
+  auto energy_dir_p = getenv("HOT_Energy");
+  // expect something like
+  //   /Users/samitch/Documents/repos/PrimalDual/HOT_Energy
+  if (energy_dir_p==nullptr)
+  {
+    std::cout << "Warning, environment variable 'HOT_Energy' should be the file location of your clone of the HOT_Energy github repository, but is undefined" << std::endl;
+  }
+  else
+  {
+    epath = energy_dir_p;
+  }
+  
+  // example path
+  std::string example_name = "HOT_fig1";
+  std::string fpath = epath + "/examples/" + example_name + "/" + example_name;
+
+  // points
+  std::vector<Point_2> points;
+  {
+    std::ifstream p_in(fpath + "_points.txt");
+    std::istream_iterator<Point> p_begin(p_in), p_end;
+    points.assign(p_begin, p_end);
+  }
+  
+  // weights
+  std::vector<double> weights;
+  {
+    std::ifstream w_in(fpath + "_weights.txt");
+    std::istream_iterator<double> w_begin(w_in), w_end;
+    weights.assign(w_begin, w_end);
+  }
+  
+  // triangles
+  std::vector< int > triangle_points;
+  // point 0,1,2 define the first triangle, etc.
+  // In the file, indices start at 1, so subtract 1 here
+  {
+    std::ifstream t_in(fpath + "_triangles.txt");
+    std::istream_iterator< int > t_begin(t_in), t_end;
+    triangle_points.assign(t_begin, t_end);
+  }
+  
+  for (auto &p : points)
+  {
+    std::cout << p;
+  }
+  std::cout << std::endl;
+  
+  using K = CGAL::Cartesian<double>;
+  using K_real = K::RT;
+
+  if (points.empty())
+    return;
+  
+  // find bounding box of points
+  double x_bounds[2], y_bounds[2];
+  x_bounds[0] = x_bounds[1] = points[0].x();
+  y_bounds[0] = y_bounds[1] = points[0].y();
+  for (auto &p : points)
+  {
+    x_bounds[0] = std::min( x_bounds[0], p.x() );
+    x_bounds[1] = std::max( x_bounds[1], p.x() );
+    y_bounds[0] = std::min( y_bounds[0], p.y() );
+    y_bounds[1] = std::max( y_bounds[1], p.y() );
+  }
+
+  double x_box[2], y_box[2];
+  const double buff = 0.5;
+  x_box[0] = x_bounds[0]- buff*(x_bounds[1]-x_bounds[0]);
+  x_box[1] = x_bounds[1]+ buff*(x_bounds[1]-x_bounds[0]);
+  y_box[0] = y_bounds[0]- buff*(y_bounds[1]-y_bounds[0]);
+  y_box[1] = y_bounds[1]+ buff*(y_bounds[1]-y_bounds[0]);
+
+  std::vector< Point_2 > b_points;
+  b_points.push_back( DT::Point(x_box[0], y_box[0]) );
+  b_points.push_back( DT::Point(x_box[1], y_box[1]) );
+  b_points.push_back( DT::Point(x_box[0], y_box[1]) );
+  b_points.push_back( DT::Point(x_box[1], y_box[0]) );
+
+  
+  // make a Delaunay triangulation of points
+  using DT = CGAL::Delaunay_triangulation_2<K>;
+  DT dt;
+
+  // insert bounding box points
+  // not needed, because it will instead create the point at infinity
+  dt.insert( b_points.begin(), b_points.end() );
+  
+  // insert actual points
+  dt.insert(points.begin(),points.end());
+  
+  // make a weighted DT of points
+  using WDT = CGAL::Regular_triangulation_2<K>;
+  WDT wdt;
+  
+  using WP = Regular_triangulation_2::Weighted_point;
+  // put points and weights together
+  std::vector<WP> wpoints;
+  for (size_t i = 0; i < points.size(); ++i)
+  {
+    wpoints.push_back( WP( points[i], weights[i] ) );
+  }
+  // insert actual points
+  wdt.insert(wpoints.begin(),wpoints.end());
+  
+  
+  // make triangulation of exactly the specified triangles
+  // see https://doc.cgal.org/latest/Triangulation_2/classCGAL_1_1Triangulation__2.html
+  // https://doc.cgal.org/latest/Triangulation_2/index.html#Section_2D_Triangulations_Basic
+
+  // the relevant methods are somewhat "hidden" because these are "advanced" uses which do not guarantee the validity of the triangulation
+  // https://doc.cgal.org/latest/TDS_2/classTriangulationDataStructure__2.html
+  // see the "create_face" methods
+  
+  // CGAL::Triangulation_2<K> t; // not this, it does flips and such automagically
+  CGAL::Triangulation_data_structure_2<> td;
+  // create vertices corresponding to each of the points
+  std::vector<CGAL::Triangulation_data_structure_2<>::Vertex_handle> verts;
+  for (auto p : points)
+  {
+    verts.push_back( td.create_vertex() );
+  }
+  for (auto tpi = triangle_points.begin(); tpi < triangle_points.end(); tpi += 3)
+  {
+    td.create_face( verts[*tpi], verts[*(tpi+1)], verts[*(tpi+2)] );
+    // do we need to tell the faces who their face neighbors are? Or is this sufficient?
+  }
+  
+  // we're on our own for deciding if a triangle is inside out, and calling the corresponding flip functions, etc.
+  
+}
