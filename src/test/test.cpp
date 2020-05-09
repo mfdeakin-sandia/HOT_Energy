@@ -7,6 +7,8 @@
 #include <iomanip>
 #include <iostream>
 
+#include <CGAL/Triangulation_data_structure_2.h>
+
 #include "array.hpp"
 #include "hot.hpp"
 #include "ply_writer.hpp"
@@ -15,6 +17,9 @@
 #include "catch.hpp"
 
 using RNG = std::mt19937_64;
+
+using WDT = CGAL::Regular_triangulation_2<K>;
+using WP = Regular_triangulation_2::Weighted_point;
 
 template <typename A>
 void permute_helper(A &avail_items, int choice_index, int &permutation,
@@ -308,6 +313,129 @@ TEST_CASE("Two Point Mesh Gradient Descent", "[HOT]") {
   }
 }
 
+void dump_TD(CGAL::Triangulation_data_structure_2<> &td, std::vector<CGAL::Triangulation_data_structure_2<>::Vertex_handle> *verts=nullptr)
+{
+  td.is_valid(); // immediately asserts!?
+  
+  // Vertex_handle and Vertex_iterator are the same type!
+  std::vector<CGAL::Triangulation_data_structure_2<>::Vertex_handle> my_verts;
+  if (verts == nullptr)
+  {
+    verts = &my_verts;
+    for (CGAL::Triangulation_data_structure_2<>::Vertex_iterator v = td.vertices_begin(); v != td.vertices_end(); ++v)
+    {
+      my_verts.push_back(v);
+    }
+  }
+  
+  // print what was created
+  std::cout << "Read in triangulation: " <<
+  " is_vaid=" << td.is_valid() <<
+  " faces=" << td.number_of_faces() <<
+  " edges=" << td.number_of_edges() <<
+  " verts=" << td.number_of_vertices() <<
+  " dimension=" << td.dimension() <<
+  " full_dim_faces=" << td.number_of_full_dim_faces() <<
+  std::endl;
+  
+  std::cout << "vertex : degree" << std::endl;
+  int i=1;
+  for (auto v : *verts)
+  {
+    std::cout << i << " : " << td.degree(v) << std::endl;
+    ++i;
+  }
+  
+  std::cout << "vertex : edge_count" << std::endl;
+  i = 1;
+  for (auto v : *verts)
+  {
+    int ecount=0;
+    CGAL::Triangulation_data_structure_2<>::Edge_circulator ec = td.incident_edges(v), done(ec);
+    if (ec!=nullptr)
+    {
+      do
+      {
+        ++ecount;
+      }
+      while (++ec != done);
+    }
+    std::cout << i << " : " << ecount << std::endl;
+    ++i;
+  }
+  
+}
+
+void copy_patch( const WDT::Vertex_handle &v, WDT &wdt, WDT::Vertex_handle &v_patch, WDT &wdt_patch )
+{
+  // patch = all of the triangles attached to vertex v
+  // This works because a WDT triangle of one set of points is a triangle in the WDT of a subset of those points, by the empty weighted circumsphere property
+  // Thus we can just grab all the adjacent points of v in wdt, and put them into v_patch
+  v_patch = wdt_patch.insert(v->point());
+  WDT::Edge_circulator ec = wdt.incident_edges(v), done(ec);
+  if (ec!=nullptr)
+  {
+    do
+    {
+      // find vo, the other vertex of the edge circulator, opposite to v
+      auto fi = *ec; // face_handle, and index
+      WDT::Face_handle f = ec->first;
+      int i = ec->second;
+      auto v1i = f->cw(i);
+      auto v2i = f->ccw(i);
+      WDT::Vertex_handle v1 = f->vertex(v1i);
+      WDT::Vertex_handle v2 = f->vertex(v2i);
+      WDT::Vertex_handle vo = (v1 == v ? v2 : v1);
+      assert(vo != v);
+      assert(v1==v  ||  v2==v);
+      
+      // insert vo if it's not the infinite vertex
+      if (!wdt.is_infinite(vo))
+      {
+        wdt_patch.insert( vo->point() );
+      }
+    }
+    while (++ec != done);
+  }
+}
+
+void copy_patch_star( const WDT::Vertex_handle &v, WDT &wdt, WDT::Vertex_handle &v_patch, WDT &wdt_patch_star )
+{
+  // todo, extension, save the patch and the star vertices in separate lists
+  
+  // patch_star = all of the triangles attached to vertex v, and all of the triangles sharing an edge with those triangles
+  // For each patch triangle, there is one more triangle, the one sharing the triangle edge opposite v
+
+  copy_patch(v, wdt, v_patch, wdt_patch_star);
+  
+  WDT::Face_circulator fc = wdt.incident_faces(v), done(fc);
+  if (fc!=nullptr)
+  {
+    do
+    {
+      WDT::Face &f = *fc;
+      int i = f.index(v);
+      WDT::Face_handle g = f.neighbor(i);
+      // find the foreign vertex, or just add them all and let the wdt figure it out
+      auto v1 = f.vertex( f.cw(i) );
+      auto v2 = f.vertex( f.ccw(i) );
+      for (int j=0; j<3; ++j)
+      {
+        WDT::Vertex_handle vo = g->vertex(j);
+        if (vo != v1 && vo != v2)
+        {
+          wdt_patch_star.insert(vo->point());
+          break;
+        }
+      }
+      // wdt_patch.insert( vo->point() );
+      
+    }
+    while (++fc != done);
+  }
+}
+
+
 TEST_CASE("HOT_fig1", "[HOT]")
 {
   
@@ -357,14 +485,15 @@ TEST_CASE("HOT_fig1", "[HOT]")
     triangle_points.assign(t_begin, t_end);
   }
   
+  std::cout << points.size() << " points= ";
   for (auto &p : points)
   {
-    std::cout << p;
+    std::cout << "(" << p << ") ";
   }
   std::cout << std::endl;
   
   using K = CGAL::Cartesian<double>;
-  using K_real = K::RT;
+  // using K_real = K::RT;
 
   if (points.empty())
     return;
@@ -407,10 +536,8 @@ TEST_CASE("HOT_fig1", "[HOT]")
   dt.insert(points.begin(),points.end());
   
   // make a weighted DT of points
-  using WDT = CGAL::Regular_triangulation_2<K>;
   WDT wdt;
   
-  using WP = Regular_triangulation_2::Weighted_point;
   // put points and weights together
   std::vector<WP> wpoints;
   for (size_t i = 0; i < points.size(); ++i)
@@ -420,6 +547,35 @@ TEST_CASE("HOT_fig1", "[HOT]")
   // insert actual points
   wdt.insert(wpoints.begin(),wpoints.end());
   
+  // While CGAL has Constrained Delaunay Triangulations, there doesn't appear to be CGAL support for Constrained Regular Triangulations
+  
+  // we can try mirroring at some point to recover edges.
+  
+  // try visualizing the wdt
+  // todo
+  
+  // given a vertex_hande v of wdt, copy the patch around it into wdt_c and its mirror vertex v_c
+  auto v_begin = wdt.finite_vertices_begin();
+  auto v_end = wdt.finite_vertices_end();
+  auto v = v_begin;
+  do
+  {
+    WDT wdt_patch;
+    WDT::Vertex_handle v_patch;
+    copy_patch( v, wdt, v_patch, wdt_patch );
+
+    // todo, draw the patch, write some tests
+
+    WDT wdt_patch_star;
+    WDT::Vertex_handle v_patch_star;
+    copy_patch_star( v, wdt, v_patch_star, wdt_patch_star );
+
+    // todo, draw the patch_star, write some tests
+
+  } while (v++ != v_end);
+  
+  
+  /*
   
   // make triangulation of exactly the specified triangles
   // see https://doc.cgal.org/latest/Triangulation_2/classCGAL_1_1Triangulation__2.html
@@ -431,18 +587,35 @@ TEST_CASE("HOT_fig1", "[HOT]")
   
   // CGAL::Triangulation_2<K> t; // not this, it does flips and such automagically
   CGAL::Triangulation_data_structure_2<> td;
+  dump_TD(td);
+  
+  td.set_dimension(2);
+  
   // create vertices corresponding to each of the points
   std::vector<CGAL::Triangulation_data_structure_2<>::Vertex_handle> verts;
   for (auto p : points)
   {
-    verts.push_back( td.create_vertex() );
+    CGAL::Triangulation_data_structure_2<>::Vertex_handle v = td.create_vertex();
+    // v->point();  // doesn't compile
+    // v->set_point(p); // doesn't compile
+    verts.push_back(v);
   }
   for (auto tpi = triangle_points.begin(); tpi < triangle_points.end(); tpi += 3)
   {
-    td.create_face( verts[*tpi], verts[*(tpi+1)], verts[*(tpi+2)] );
+    // points are indexed starting at 1
+    auto i0 = *tpi -1, i1 = *(tpi+1) -1, i2 = *(tpi+2) -1;
+    
+    auto f = td.create_face( verts[i0], verts[i1], verts[i2] );
+    std::cout << " new face " << *f << " v(" << i0 << "," << i1 << "," << i2 << ") ";
     // do we need to tell the faces who their face neighbors are? Or is this sufficient?
+    //   Face_handle   create_face (Vertex_handle v1, Vertex_handle v2, Vertex_handle v3, Face_handle f1, Face_handle f2, Face_handle f3)
+    //   adds a face with vertices v1, v2 and v3, and neighbors f1, f2, f3.
   }
   
+  dump_TD(td, &verts);
+  
   // we're on our own for deciding if a triangle is inside out, and calling the corresponding flip functions, etc.
+   
+   */
   
 }
